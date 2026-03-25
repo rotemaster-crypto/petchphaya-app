@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phetpaya Garden - Smart Pro V20</title>
+    <title>Phetpaya Garden - Smart Pro V21</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -94,7 +94,7 @@
             <p style="font-size:12px; color:#666; margin: 10px 0 15px 0;">ถ่ายภาพหรือเลือกจากเครื่องเพื่อวินิจฉัยทันที</p>
             <input type="file" id="v-search-input" accept="image/*" capture="environment" style="display:none;" onchange="document.getElementById('diag-result-link').style.display = 'block';">
             <button class="btn-main" style="background:var(--google);" onclick="document.getElementById('v-search-input').click()">📷 ถ่ายรูปหรือเลือกภาพวินิจฉัย</button>
-            <a href="https://www.google.com/searchbyimage?sbisrc=4se" target="_blank" id="diag-result-link" style="display:none; background: var(--google); color: white; padding: 12px; border-radius: 14px; text-decoration: none; font-weight: 600; margin-top: 15px; font-size: 14px; text-align: center; display: block;">🔍 ดูผลการวินิจฉัยพืชของคุณ</a>
+            <a href="https://www.google.com/searchbyimage?sbisrc=4se" target="_blank" id="diag-result-link" style="display:none; background: var(--google); color: white; padding: 12px; border-radius: 14px; text-decoration: none; font-weight: 600; margin-top: 15px; font-size: 14px; text-align: center;">🔍 ดูผลการวินิจฉัยพืชของคุณ</a>
         </div>
     </div>
 
@@ -134,8 +134,8 @@
 </div>
 
 <script>
-    let plants = JSON.parse(localStorage.getItem('phetpaya_v20_db') || "[]");
-    let activeId = null, activeType = '', curTemp = 31, curHum = 60, curLoc = "ไม่พบพิกัด";
+    let plants = JSON.parse(localStorage.getItem('phetpaya_v21_db') || "[]");
+    let activeId = null, activeType = '', curTemp = 32, curHum = 60, curLoc = "กรุงเทพฯ (ค่าเริ่มต้น)";
     let processedImageData = "";
 
     async function init() {
@@ -150,7 +150,6 @@
         renderUI();
     }
 
-    // ระบบจัดการภาพมือถือ (Auto-Resize & Stabilizer)
     function mobileImageHandler(input) {
         const file = input.files[0];
         if (!file) return;
@@ -174,7 +173,6 @@
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 
-                // บีบอัดไฟล์เหลือ 70% เพื่อความเสถียรบน LocalStorage
                 processedImageData = canvas.toDataURL('image/jpeg', 0.7);
                 status.innerText = "✅ ภาพพร้อมบันทึกแล้ว";
                 btn.disabled = false;
@@ -202,7 +200,7 @@
         };
         
         plants.push(newPlant);
-        localStorage.setItem('phetpaya_v20_db', JSON.stringify(plants));
+        localStorage.setItem('phetpaya_v21_db', JSON.stringify(plants));
         processedImageData = "";
         document.getElementById('p-name').value = "";
         document.getElementById('p-img').value = "";
@@ -211,33 +209,57 @@
         renderUI();
     }
 
-    // ระบบสภาพอากาศและพิกัดละเอียด
+    // แก้ไขให้มีระบบ Fallback ถ้าระบุพิกัดไม่ได้ภายใน 5 วินาที จะดึงค่ามาตรฐานมาใช้เลย
     function updateFullWeather() {
-        navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-                try {
-                    const lat = pos.coords.latitude;
-                    const lon = pos.coords.longitude;
-                    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=f1311f97b48347f3b60c0f8364843477&units=metric&lang=th`);
-                    const data = await res.json();
-                    
-                    curTemp = data.main.temp;
-                    curHum = data.main.humidity;
-                    curLoc = data.name + ", " + data.sys.country;
+        const setFallbackData = () => {
+            curTemp = 32;
+            curHum = 60;
+            curLoc = "กรุงเทพฯ (ค่าเริ่มต้น)";
+            document.getElementById('loc-text').innerText = "📍 " + curLoc;
+            document.getElementById('temp-display').innerText = curTemp + "°C";
+            document.getElementById('weather-desc').innerText = "สภาพอากาศปกติ";
+            document.getElementById('weather-sub').innerText = `ความชื้น: 60% | ลม: 2 m/s`;
+            document.getElementById('disease-alert').innerText = "✅ สภาพอากาศปกติ ดูแลตามรอบ";
+            renderUI();
+        };
 
-                    document.getElementById('loc-text').innerText = "📍 " + curLoc;
-                    document.getElementById('temp-display').innerText = Math.round(curTemp) + "°C";
-                    document.getElementById('weather-desc').innerText = data.weather[0].description;
-                    document.getElementById('weather-sub').innerText = `ความชื้น: ${curHum}% | ความเร็วลม: ${data.wind.speed} m/s`;
-                    
-                    let advice = curHum > 75 ? "🌧️ ระวังเชื้อราและรากเน่าจากความชื้น" : "✅ สภาพอากาศปกติ ดูแลตามรอบ";
-                    if(curTemp > 34) advice = "🔥 ร้อนจัด! ควรพรมน้ำที่ใบและระวังเพลี้ยไฟ";
-                    document.getElementById('disease-alert').innerText = advice;
-                    renderUI();
-                } catch(e) { console.log(e); }
-            },
-            () => { document.getElementById('loc-text').innerText = "📍 กรุงเทพฯ (ตั้งค่าเริ่มต้น)"; }
-        );
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    try {
+                        const lat = pos.coords.latitude;
+                        const lon = pos.coords.longitude;
+                        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=f1311f97b48347f3b60c0f8364843477&units=metric&lang=th`);
+                        if (!res.ok) throw new Error("API Limit");
+                        const data = await res.json();
+                        
+                        curTemp = data.main.temp;
+                        curHum = data.main.humidity;
+                        curLoc = data.name + ", " + data.sys.country;
+
+                        document.getElementById('loc-text').innerText = "📍 " + curLoc;
+                        document.getElementById('temp-display').innerText = Math.round(curTemp) + "°C";
+                        document.getElementById('weather-desc').innerText = data.weather[0].description;
+                        document.getElementById('weather-sub').innerText = `ความชื้น: ${curHum}% | ความเร็วลม: ${data.wind.speed} m/s`;
+                        
+                        let advice = curHum > 75 ? "🌧️ ระวังเชื้อราและรากเน่าจากความชื้น" : "✅ สภาพอากาศปกติ ดูแลตามรอบ";
+                        if(curTemp > 34) advice = "🔥 ร้อนจัด! ควรพรมน้ำที่ใบและระวังเพลี้ยไฟ";
+                        document.getElementById('disease-alert').innerText = advice;
+                        renderUI();
+                    } catch(e) { 
+                        console.log(e);
+                        setFallbackData(); 
+                    }
+                },
+                (err) => { 
+                    console.log("GPS Denied or Error:", err);
+                    setFallbackData(); 
+                },
+                { timeout: 5000 } // เพิ่ม Timeout 5 วินาที ถ้าหาไม่เจอให้ตัดจบเลย
+            );
+        } else {
+            setFallbackData();
+        }
     }
 
     function renderUI() {
@@ -312,7 +334,7 @@
             }
             return p;
         });
-        localStorage.setItem('phetpaya_v20_db', JSON.stringify(plants));
+        localStorage.setItem('phetpaya_v21_db', JSON.stringify(plants));
         closeModal('care-modal'); renderUI();
     }
 
