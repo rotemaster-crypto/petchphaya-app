@@ -3,181 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เพชรพญา - ระบบบันทึกสุขภาพพืช</title>
+    <title>เพชรพญา - Plant Care Journal</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2e7d32; --secondary: #1976d2; --warning: #ffa000; --danger: #d32f2f; --bg: #f0f4f0; }
-        body { font-family: 'Kanit', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 80px; color: #333; }
-        .container { padding: 15px; max-width: 600px; margin: auto; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h3 { color: var(--primary); margin-top: 0; border-bottom: 2px solid var(--bg); padding-bottom: 8px; }
-        label { display: block; margin: 10px 0 5px; font-weight: bold; font-size: 14px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-        .btn { width: 100%; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        .btn-save { background-color: var(--primary); }
+        :root { --main-green: #4CAF50; --soft-green: #E8F5E9; --accent: #FF9800; --dark: #2C3E50; }
+        body { font-family: 'Kanit', sans-serif; background-color: #F9FBFA; margin: 0; color: var(--dark); padding-bottom: 80px; }
+        .app-header { background: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .container { padding: 15px; max-width: 500px; margin: auto; }
         
-        /* Table Style */
-        .scroll-table { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
-        th { background: #f8f8f8; color: var(--primary); }
+        /* Plant Card */
+        .plant-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; border-left: 5px solid var(--main-green); }
+        .plant-info h2 { margin: 0; color: var(--main-green); font-size: 20px; }
+        .plant-info p { margin: 5px 0; font-size: 14px; color: #7f8c8d; }
+        
+        /* Health Bar */
+        .health-container { background: #eee; height: 10px; border-radius: 5px; margin: 15px 0; overflow: hidden; }
+        .health-bar { background: linear-gradient(90deg, #4CAF50, #8BC34A); height: 100%; transition: 0.5s; }
+        
+        /* Action Buttons */
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-mini { padding: 10px; border: none; border-radius: 12px; font-size: 14px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-water { background: #E3F2FD; color: #2196F3; }
+        .btn-fert { background: #FFF3E0; color: #FB8C00; }
+        .btn-share { background: var(--main-green); color: white; grid-column: span 2; margin-top: 5px; }
+
+        /* Multi-Plant Form */
+        .add-plant-btn { background: var(--main-green); color: white; padding: 15px; border-radius: 50px; border: none; width: 100%; font-size: 16px; font-weight: 600; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3); }
+        
+        /* Modal Style */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 400px; }
 
         /* Navigation */
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; padding: 10px 0; z-index: 100; }
-        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #777; cursor: pointer; }
-        .nav-item.active { color: var(--primary); font-weight: bold; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .nav-item { flex: 1; text-align: center; font-size: 12px; color: #bdc3c7; cursor: pointer; }
+        .nav-item.active { color: var(--main-green); font-weight: 600; }
     </style>
 </head>
 <body>
 
+<div class="app-header">
+    <h1 style="margin:0; font-size:22px; color:var(--main-green)">Petch Phaya Garden</h1>
+    <div id="welcome" style="font-size:12px; color:#95a5a6">ยินดีต้อนรับคุณ ...</div>
+</div>
+
 <div class="container">
-    <div id="tab1" class="tab-content active">
-        <div class="card">
-            <h3>1. ข้อมูลพื้นฐานต้นไม้ (Profile)</h3>
-            <label>ID / ชื่อต้นไม้</label>
-            <input type="text" id="p_name" placeholder="เช่น ทุเรียนเบอร์ 01">
-            <label>สายพันธุ์</label>
-            <input type="text" id="p_species" placeholder="หมอนทอง / Durio zibethinus">
-            <label>วันที่เริ่มปลูก</label>
-            <input type="date" id="p_date">
-            <label>วัสดุปลูก (Soil Mix)</label>
-            <textarea id="p_soil" rows="2" placeholder="ระบุสูตรผสมดิน..."></textarea>
-            <button class="btn btn-save" onclick="saveProfile()">บันทึกโปรไฟล์</button>
-        </div>
-        <div id="profileDisplay"></div>
-    </div>
+    <button class="add-plant-btn" onclick="openModal()">+ เพิ่มต้นไม้ใหม่</button>
+    <div id="plantList"></div>
+</div>
 
-    <div id="tab2" class="tab-content">
-        <div class="card">
-            <h3>2. บันทึกกิจกรรมประจำวัน</h3>
-            <label>วันที่รดน้ำ/ใส่ปุ๋ย</label>
-            <input type="date" id="l_date">
-            <label>รดน้ำ (ปริมาณ)</label>
-            <input type="text" id="l_water" placeholder="เช่น 500ml">
-            <label>ปุ๋ย / สารอาหาร</label>
-            <input type="text" id="l_fert" placeholder="ระบุสูตรปุ๋ย">
-            <label>หมายเหตุ / สิ่งที่สังเกตเห็น</label>
-            <textarea id="l_note" rows="2"></textarea>
-            <button class="btn btn-save" style="background: var(--secondary);" onclick="saveLog()">เพิ่มบันทึกกิจกรรม</button>
-        </div>
-        <div class="card scroll-table">
-            <table id="logTable">
-                <thead>
-                    <tr><th>วันที่</th><th>น้ำ</th><th>ปุ๋ย</th><th>หมายเหตุ</th></tr>
-                </thead>
-                <tbody id="logBody"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="tab3" class="tab-content">
-        <div class="card">
-            <h3>3. ติดตามการเติบโต (ทุก 15/30 วัน)</h3>
-            <label>ความสูง (cm)</label>
-            <input type="number" id="g_height">
-            <label>จำนวนใบ (ใบ)</label>
-            <input type="number" id="g_leaves">
-            <label>ขนาดใบที่ใหญ่ที่สุด (cm)</label>
-            <input type="number" id="g_maxleaf">
-            <button class="btn btn-save" style="background: var(--warning);" onclick="saveGrowth()">บันทึกการเติบโต</button>
-        </div>
-        <div id="growthHistory"></div>
-    </div>
-
-    <div id="tab4" class="tab-content">
-        <div class="card">
-            <h3 style="color:var(--danger)">4. บันทึกสุขภาพ & ศัตรูพืช</h3>
-            <label>อาการที่พบ</label>
-            <input type="text" id="h_symptom" placeholder="ใบไหม้ / ขอบเหลือง / เพลี้ย">
-            <label>วิธีแก้ไข</label>
-            <textarea id="h_treat" rows="2" placeholder="พ่นน้ำส้มควันไม้ / ย้ายที่วาง"></textarea>
-            <label>ผลลัพธ์</label>
-            <select id="h_status">
-                <option value="รอดูอาการ">รอดูอาการ</option>
-                <option value="ดีขึ้น">ดีขึ้น</option>
-                <option value="ไม่รอด">ไม่รอด</option>
-            </select>
-            <button class="btn btn-save" style="background: var(--danger);" onclick="saveHealth()">บันทึกอาการ</button>
-        </div>
-        <div id="healthHistory"></div>
+<div id="plantModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0">🌿 ข้อมูลต้นไม้ใหม่</h3>
+        <input type="text" id="newPlantName" placeholder="ชื่อต้นไม้ (เช่น มอนสเตอร่าเบอร์ 1)" style="margin-bottom:15px; padding:12px; width:100%; border:1px solid #ddd; border-radius:10px;">
+        <select id="newPlantType" style="margin-bottom:15px; padding:12px; width:100%; border:1px solid #ddd; border-radius:10px;">
+            <option value="ไม้ใบ">ไม้ใบ / ไม้ประดับ</option>
+            <option value="ไม้ผล">ไม้ผล (ทุเรียน/อื่นๆ)</option>
+            <option value="พืชสวนครัว">พืชสวนครัว</option>
+        </select>
+        <button class="btn-mini btn-share" style="width:100%" onclick="addPlant()">เริ่มปลูกเลย!</button>
+        <button onclick="closeModal()" style="width:100%; background:none; border:none; color:#95a5a6; margin-top:10px;">ยกเลิก</button>
     </div>
 </div>
 
 <div class="nav-bar">
-    <div class="nav-item active" onclick="switchTab(1, this)">🌿<br>โปรไฟล์</div>
-    <div class="nav-item" onclick="switchTab(2, this)">📅<br>กิจกรรม</div>
-    <div class="nav-item" onclick="switchTab(3, this)">📈<br>เติบโต</div>
-    <div class="nav-item" onclick="switchTab(4, this)">🏥<br>สุขภาพ</div>
+    <div class="nav-item active">🏡<br>สวนของฉัน</div>
+    <div class="nav-item">🏆<br>ความสำเร็จ</div>
+    <div class="nav-item">👤<br>โปรไฟล์</div>
 </div>
 
 <script>
-    function switchTab(tabId, el) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('tab' + tabId).classList.add('active');
-        el.classList.add('active');
+    let plants = JSON.parse(localStorage.getItem('my_garden') || "[]");
+
+    async function init() {
+        try {
+            await liff.init({ liffId: "2009595288-7Tm3Mher" });
+            if (liff.isLoggedIn()) {
+                const profile = await liff.getProfile();
+                document.getElementById("welcome").innerText = "สวนของคุณ " + profile.displayName;
+            } else { liff.login(); }
+        } catch (e) { console.log(e); }
+        renderPlants();
     }
 
-    // ฟังก์ชันบันทึก Profile
-    function saveProfile() {
-        const data = {
-            name: document.getElementById('p_name').value,
-            species: document.getElementById('p_species').value,
-            date: document.getElementById('p_date').value,
-            soil: document.getElementById('p_soil').value
+    function openModal() { document.getElementById('plantModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('plantModal').style.display = 'none'; }
+
+    function addPlant() {
+        const name = document.getElementById('newPlantName').value;
+        const type = document.getElementById('newPlantType').value;
+        if(!name) return alert("ตั้งชื่อให้น้องหน่อยครับ");
+
+        const newPlant = {
+            id: Date.now(),
+            name: name,
+            type: type,
+            health: 50,
+            level: 1,
+            logs: 0
         };
-        localStorage.setItem('plant_profile', JSON.stringify(data));
-        alert('บันทึกโปรไฟล์เรียบร้อย');
-        renderProfile();
+
+        plants.push(newPlant);
+        localStorage.setItem('my_garden', JSON.stringify(plants));
+        closeModal();
+        renderPlants();
     }
 
-    function renderProfile() {
-        const d = JSON.parse(localStorage.getItem('plant_profile'));
-        if(d) {
-            document.getElementById('profileDisplay').innerHTML = `
-                <div class="card" style="background:#e8f5e9">
-                    <strong>กำลังปลูก: ${d.name}</strong><br>
-                    <small>${d.species} | เริ่มเมื่อ: ${d.date}</small><br>
-                    <p style="font-size:12px; margin:5px 0;">ดิน: ${d.soil}</p>
-                </div>`;
+    function updatePlant(id, action) {
+        plants = plants.map(p => {
+            if(p.id === id) {
+                if(action === 'water') p.health = Math.min(100, p.health + 10);
+                if(action === 'fert') {
+                    p.health = Math.min(100, p.health + 20);
+                    p.level += 1;
+                }
+                p.logs += 1;
+            }
+            return p;
+        });
+        localStorage.setItem('my_garden', JSON.stringify(plants));
+        renderPlants();
+    }
+
+    function shareSuccess(name, level) {
+        const text = `🎉 เย้! ต้น${name} ของฉันเลเวล ${level} แล้ว! 🌿 ขอบคุณความรู้ดีๆ จากแอป Petch Phaya Garden #เพชรพญา #Trikoreac #เกษตรคนรุ่นใหม่`;
+        if (navigator.share) {
+            navigator.share({ title: 'ความสำเร็จสีเขียว', text: text, url: window.location.href });
+        } else {
+            alert("ก๊อปปี้ไปแชร์ได้เลย: " + text);
         }
     }
 
-    // ฟังก์ชันบันทึก Log กิจกรรม
-    function saveLog() {
-        const log = {
-            date: document.getElementById('l_date').value,
-            water: document.getElementById('l_water').value,
-            fert: document.getElementById('l_fert').value,
-            note: document.getElementById('l_note').value
-        };
-        let logs = JSON.parse(localStorage.getItem('plant_logs') || "[]");
-        logs.unshift(log);
-        localStorage.setItem('plant_logs', JSON.stringify(logs));
-        renderLogs();
+    function renderPlants() {
+        const list = document.getElementById('plantList');
+        if(plants.length === 0) {
+            list.innerHTML = "<p style='text-align:center; color:#bdc3c7; margin-top:50px;'>ยังไม่มีต้นไม้ในสวน กดปุ่มด้านบนเพื่อเพิ่มเลย!</p>";
+            return;
+        }
+
+        list.innerHTML = plants.map(p => `
+            <div class="plant-card">
+                <div class="plant-info">
+                    <span style="position:absolute; right:20px; top:20px; background:var(--soft-green); padding:5px 12px; border-radius:15px; font-size:12px; color:var(--main-green); font-weight:bold;">Lv. ${p.level}</span>
+                    <h2>${p.name}</h2>
+                    <p>ประเภท: ${p.type}</p>
+                </div>
+                <div style="font-size:12px; margin-top:10px;">ความสมบูรณ์ของพืช: ${p.health}%</div>
+                <div class="health-container">
+                    <div class="health-bar" style="width: ${p.health}%"></div>
+                </div>
+                <div class="action-grid">
+                    <button class="btn-mini btn-water" onclick="updatePlant(${p.id}, 'water')">💧 รดน้ำ</button>
+                    <button class="btn-mini btn-fert" onclick="updatePlant(${p.id}, 'fert')">🧪 ใส่ปุ๋ย</button>
+                    <button class="btn-mini btn-share" onclick="shareSuccess('${p.name}', ${p.level})">✨ แชร์ความสำเร็จ</button>
+                </div>
+            </div>
+        `).join('');
     }
 
-    function renderLogs() {
-        const logs = JSON.parse(localStorage.getItem('plant_logs') || "[]");
-        document.getElementById('logBody').innerHTML = logs.map(l => 
-            `<tr><td>${l.date}</td><td>${l.water}</td><td>${l.fert}</td><td>${l.note}</td></tr>`
-        ).join('');
-    }
-
-    // ฟังก์ชันส่วนอื่นๆ (Growth/Health) ให้ใช้โครงสร้างคล้ายกัน
-    function saveGrowth() { alert('บันทึกข้อมูลเติบโตแล้ว'); }
-    function saveHealth() { alert('บันทึกข้อมูลสุขภาพแล้ว'); }
-
-    window.onload = () => {
-        renderProfile();
-        renderLogs();
-        // เซ็ตวันที่ปัจจุบันให้ช่อง Date
-        const today = new Date().toISOString().split('T')[0];
-        document.querySelectorAll('input[type="date"]').forEach(d => d.value = today);
-    };
+    init();
 </script>
-
 </body>
 </html>
