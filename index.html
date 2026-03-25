@@ -8,56 +8,97 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --phetpaya-green: #1B5E20; --light-bg: #F5F7F5; --status-ok: #43A047; --status-warn: #FB8C00; --status-danger: #E53935; }
-        body { font-family: 'Kanit', sans-serif; background-color: var(--light-bg); margin: 0; color: #333; padding-bottom: 80px; }
-        .app-header { background: #fff; padding: 20px; text-align: left; border-bottom: 1px solid #eee; }
+        body { font-family: 'Kanit', sans-serif; background-color: var(--light-bg); margin: 0; color: #333; padding-bottom: 90px; }
+        .app-header { background: #fff; padding: 15px 20px; text-align: left; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 50; }
         .container { padding: 15px; max-width: 500px; margin: auto; }
         
+        /* Tab System */
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+
         /* Weather Card */
-        .weather-card { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .weather-info { display: flex; justify-content: space-between; align-items: center; }
+        .weather-card { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; }
         
         /* Plant Card */
         .plant-item { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #e0e0e0; }
-        .plant-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f5f5f5; padding-bottom: 10px; margin-bottom: 10px; }
-        .status-badge { font-size: 11px; padding: 3px 8px; border-radius: 20px; color: white; }
-        
-        /* Expert Advice */
         .advice-box { background: #FFF8E1; border-left: 4px solid #FFB300; padding: 10px; font-size: 13px; margin: 10px 0; border-radius: 0 8px 8px 0; }
 
         /* Form */
         .btn-main { background: var(--phetpaya-green); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; }
         .input-std { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 10px 0; }
-        .nav-item { flex: 1; text-align: center; font-size: 12px; color: #999; }
-        .nav-item.active { color: var(--phetpaya-green); }
+        /* Nav Bar */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 12px 0; box-shadow: 0 -3px 10px rgba(0,0,0,0.05); z-index: 100; }
+        .nav-item { flex: 1; text-align: center; font-size: 12px; color: #999; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--phetpaya-green); font-weight: 600; }
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+        /* Forecast & Report Styles */
+        .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #eee; }
     </style>
 </head>
 <body>
 
 <div class="app-header">
-    <h1 style="margin:0; font-size:20px; color:var(--phetpaya-green)">Phetpaya Garden</h1>
-    <div id="welcome" style="font-size:12px; color:#777">สวัสดีครับคุณ ...</div>
+    <h1 style="margin:0; font-size:18px; color:var(--phetpaya-green)">Phetpaya Garden</h1>
+    <div id="welcome" style="font-size:11px; color:#777">กำลังโหลดข้อมูล...</div>
 </div>
 
 <div class="container">
-    <div class="weather-card">
-        <div style="font-size:12px; opacity:0.8;">วิเคราะห์สภาพอากาศรายพื้นที่</div>
-        <div class="weather-info">
-            <div id="weather-stat">กำลังดึงข้อมูลพื้นที่...</div>
-            <div id="location-name" style="font-size:14px; font-weight:600;">📍 ตรวจสอบตำแหน่ง</div>
+    
+    <div id="page-home" class="page-content active">
+        <div class="weather-card">
+            <div style="font-size:12px; opacity:0.8;">📍 พิกัด: <span id="loc-text">สมุทรปราการ</span></div>
+            <div style="font-size:18px; font-weight:600; margin: 5px 0;">31°C | ความชื้น 75%</div>
+            <div id="expert-alert" style="font-size:13px; border-top:1px solid rgba(255,255,255,0.2); padding-top:8px;">
+                ☀️ ฤดูร้อน: ระวังการขาดน้ำและเพลี้ยจักจั่นฝอย
+            </div>
         </div>
-        <div id="expert-alert" style="margin-top:10px; font-size:13px; border-top:1px solid rgba(255,255,255,0.2); padding-top:8px;">
-            ⚠️ ช่วงนี้ความชื้นสูง ระวังโรครากเน่าและเชื้อราในทุเรียน
+        <button class="btn-main" style="margin-bottom:20px;" onclick="document.getElementById('add-modal').style.display='flex'">+ เพิ่มพืชลงทะเบียนใหม่</button>
+        <div id="plantList"></div>
+    </div>
+
+    <div id="page-forecast" class="page-content">
+        <h3 style="margin-top:0;">🌦️ วิเคราะห์ความเสี่ยงรายสัปดาห์</h3>
+        <div class="info-card" style="border-left: 5px solid var(--status-danger);">
+            <strong>🚨 เฝ้าระวังสูงสุด: โรครากเน่า (Root Rot)</strong>
+            <p style="font-size:13px; color:#666; margin:5px 0;">เนื่องจากพบความชื้นสะสมสูงในพื้นที่ในช่วง 3 วันที่ผ่านมา</p>
+            <div style="font-size:12px; color:var(--phetpaya-green); font-weight:600;">วิธีป้องกัน: งดการให้น้ำซ้ำ, ตรวจสอบการระบายน้ำของดิน</div>
+        </div>
+        <div class="info-card" style="border-left: 5px solid var(--status-warn);">
+            <strong>🐛 เฝ้าระวัง: เพลี้ยจักจั่นฝอย</strong>
+            <p style="font-size:13px; color:#666; margin:5px 0;">มักพบในช่วงการแตกใบอ่อนของทุเรียน</p>
+            <div style="font-size:12px; color:var(--phetpaya-green); font-weight:600;">วิธีป้องกัน: สำรวจใบอ่อนสม่ำเสมอ หากพบตัวเต็มวัยให้ใช้สารชีวภัณฑ์</div>
         </div>
     </div>
 
-    <button class="btn-main" style="margin-bottom:20px;" onclick="document.getElementById('add-modal').style.display='flex'">+ เพิ่มพืชลงทะเบียนใหม่</button>
-    
-    <div id="plantList"></div>
+    <div id="page-report" class="page-content">
+        <h3 style="margin-top:0;">📑 สรุปการดูแลรายเดือน</h3>
+        <div class="info-card">
+            <div style="font-size:14px; color:#666;">จำนวนพืชทั้งหมด</div>
+            <div id="total-plants" style="font-size:24px; font-weight:600; color:var(--phetpaya-green)">0 ต้น</div>
+        </div>
+        <div class="info-card">
+            <strong>บันทึกล่าสุด</strong>
+            <div id="report-summary" style="font-size:13px; color:#666; margin-top:5px;">ยังไม่มีข้อมูลบันทึกการดูแล</div>
+        </div>
+    </div>
+
 </div>
 
-<div id="add-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
+<div class="nav-bar">
+    <div class="nav-item active" onclick="switchTab('home', this)">
+        <span class="nav-icon">📋</span> รายการพืช
+    </div>
+    <div class="nav-item" onclick="switchTab('forecast', this)">
+        <span class="nav-icon">🌦️</span> พยากรณ์โรค
+    </div>
+    <div class="nav-item" onclick="switchTab('report', this)">
+        <span class="nav-icon">📑</span> รายงาน
+    </div>
+</div>
+
+<div id="add-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center;">
     <div style="background:white; padding:20px; border-radius:15px; width:85%;">
         <h3>ลงทะเบียนพืช</h3>
         <input type="text" id="p-name" class="input-std" placeholder="ชื่อเรียกต้นไม้">
@@ -71,12 +112,6 @@
     </div>
 </div>
 
-<div class="nav-bar">
-    <div class="nav-item active">📋 รายการพืช</div>
-    <div class="nav-item">🌦️ พยากรณ์โรค</div>
-    <div class="nav-item">📑 รายงาน</div>
-</div>
-
 <script>
     let plants = JSON.parse(localStorage.getItem('phetpaya_db') || "[]");
 
@@ -86,23 +121,19 @@
             if (liff.isLoggedIn()) {
                 const profile = await liff.getProfile();
                 document.getElementById("welcome").innerText = "ผู้ดูแลระบบ: คุณ " + profile.displayName;
-                getWeather(); // ดึงสภาพอากาศ
             } else { liff.login(); }
         } catch (e) { console.log(e); }
         renderPlants();
+        updateReport();
     }
 
-    function getWeather() {
-        // จำลองการดึงสภาพอากาศตามฤดูกาลและพื้นที่ (ในอนาคตเชื่อม API Weather)
-        const month = new Date().getMonth() + 1;
-        let advice = "";
-        if(month >= 5 && month <= 10) advice = "⛈️ ฤดูฝน: ระวังการระบาดของโรครากเน่าและเชื้อราไฟทอปเธอร่า แนะนำฉีดพ่นสารป้องกันเชื้อรา";
-        else if(month >= 11 || month <= 2) advice = "🌡️ ฤดูหนาว: ระวังเพลี้ยไฟและไรแดงทำลายใบอ่อน";
-        else advice = "☀️ ฤดูร้อน: ระวังการขาดน้ำและเพลี้ยจักจั่นฝอย";
+    // ฟังก์ชันสลับหน้า (สำคัญ!)
+    function switchTab(pageId, el) {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         
-        document.getElementById('expert-alert').innerText = advice;
-        document.getElementById('weather-stat').innerText = "อุณหภูมิ 31°C | ความชื้น 75%";
-        document.getElementById('location-name').innerText = "📍 เขตสมุทรปราการ";
+        document.getElementById('page-' + pageId).classList.add('active');
+        el.classList.add('active');
     }
 
     function addPlant() {
@@ -113,26 +144,31 @@
         localStorage.setItem('phetpaya_db', JSON.stringify(plants));
         document.getElementById('add-modal').style.display='none';
         renderPlants();
+        updateReport();
     }
 
     function renderPlants() {
         const list = document.getElementById('plantList');
+        if(plants.length === 0) {
+            list.innerHTML = "<p style='text-align:center; color:#999;'>ยังไม่มีข้อมูลพืช ลงทะเบียนเพื่อเริ่มจดบันทึก</p>";
+            return;
+        }
         list.innerHTML = plants.map(p => `
             <div class="plant-item">
-                <div class="plant-header">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                     <div style="font-weight:600; color:var(--phetpaya-green)">${p.name} (${p.type})</div>
-                    <span class="status-badge" style="background:var(--status-ok)">สุขภาพปกติ</span>
+                    <span style="font-size:10px; background:#e8f5e9; padding:2px 8px; border-radius:10px; color:green;">สุขภาพปกติ</span>
                 </div>
-                <div style="font-size:13px; color:#666;">
+                <div style="font-size:12px; color:#666;">
                     💧 รดน้ำล่าสุด: ${p.lastWater}<br>
                     🧪 ใส่ปุ๋ยล่าสุด: ${p.lastFert}
                 </div>
                 <div class="advice-box">
-                    <strong>คำแนะนำวันนี้:</strong> ตรวจสอบพิกัดพบความชื้นสะสม ควรเลี่ยงการให้ปุ๋ยทางใบในช่วงเย็น
+                    <strong>คำแนะนำวันนี้:</strong> แนะนำฉีดพ่นสารปรับปรุงดินช่วงเช้าเพื่อให้ดูดซึมได้ดีที่สุด
                 </div>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd; background:#fff;" onclick="updateLog(${p.id}, 'water')">💧 บันทึกรดน้ำ</button>
-                    <button style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd; background:#fff;" onclick="updateLog(${p.id}, 'fert')">🧪 บันทึกปุ๋ย</button>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd; background:#fff; font-size:11px;" onclick="updateLog(${p.id}, 'water')">💧 บันทึกรดน้ำ</button>
+                    <button style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd; background:#fff; font-size:11px;" onclick="updateLog(${p.id}, 'fert')">🧪 บันทึกปุ๋ย</button>
                 </div>
             </div>
         `).join('');
@@ -149,6 +185,14 @@
         });
         localStorage.setItem('phetpaya_db', JSON.stringify(plants));
         renderPlants();
+        updateReport();
+    }
+
+    function updateReport() {
+        document.getElementById('total-plants').innerText = plants.length + " ต้น";
+        if(plants.length > 0) {
+            document.getElementById('report-summary').innerText = "คุณมีการดูแลพืชสม่ำเสมอในสัปดาห์นี้ อย่าลืมตรวจสอบหน้าพยากรณ์โรคเป็นประจำ";
+        }
     }
 
     init();
