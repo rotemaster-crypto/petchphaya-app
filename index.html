@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phetpaya Garden - Smart Pro V18</title>
+    <title>Phetpaya Garden - Smart Pro V19</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -14,40 +14,32 @@
         .page-content { display: none; }
         .page-content.active { display: block; }
 
-        /* Weather & Cards */
+        /* Weather Hero */
         .weather-hero { background: linear-gradient(135deg, #388E3C, var(--phetpaya)); color: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 8px 15px rgba(45,90,39,0.15); }
         .plant-card { background: white; border-radius: 22px; padding: 18px; margin-bottom: 16px; border: 1px solid #f0f4f0; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
         .plant-img { width: 100%; height: 160px; background: #eee; border-radius: 16px; object-fit: cover; margin-bottom: 12px; }
         .schedule-tag { font-size: 11px; padding: 5px 12px; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-right: 5px; margin-bottom: 5px; }
         
-        /* Action Buttons */
         .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
         .btn-action { background: #fff; border: 1px solid #eee; padding: 10px 5px; border-radius: 15px; text-align: center; cursor: pointer; font-size: 11px; font-weight: 600; }
         .btn-action.done { background: #f0f0f0; color: #999; cursor: not-allowed; }
         .btn-main { background: var(--phetpaya); color: white; border: none; padding: 15px; border-radius: 18px; width: 100%; font-weight: 600; cursor: pointer; font-size: 16px; }
 
-        /* Nav Bar */
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #edf2ed; padding: 10px 0 25px 0; z-index: 1000; }
         .nav-item { flex: 1; text-align: center; font-size: 11px; color: #BDC3C7; cursor: pointer; }
         .nav-item.active { color: var(--phetpaya); font-weight: 600; }
 
-        /* Modal */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; padding:20px; }
         .modal-content { background:white; padding:25px; border-radius:25px; width:100%; max-width: 380px; box-sizing: border-box; }
         .input-box { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-top: 10px; box-sizing: border-box; font-size: 14px; }
         
-        /* Diagnosis UI */
-        .diag-box { background: white; border-radius: 22px; padding: 24px; border: 2px dashed var(--google); text-align: center; margin-bottom: 16px; }
-        .diag-result-btn { display: none; background: var(--google); color: white; padding: 12px; border-radius: 14px; text-decoration: none; font-weight: 600; margin-top: 15px; font-size: 14px; }
-
-        /* Report Image */
         .report-item { background: white; border-radius: 18px; padding: 15px; margin-bottom: 12px; border: 1px solid #eee; display: flex; gap: 12px; }
         .report-thumb { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
         .report-content { flex: 1; }
         
-        .shop-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-shop); color: white; padding: 6px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; margin-right: 5px; }
-        .oa-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-oa); color: white; padding: 6px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; }
         #lux-preview, #c-buffer { display: none; }
+        .shop-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-shop); color: white; padding: 8px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; margin-right: 5px; }
+        .oa-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-oa); color: white; padding: 8px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -58,7 +50,6 @@
 </div>
 
 <div class="container">
-    
     <div id="page-home" class="page-content active">
         <div class="weather-hero">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -78,7 +69,6 @@
 
     <div id="page-tools" class="page-content">
         <h3>🔍 เครื่องมืออัจฉริยะ</h3>
-        
         <div class="plant-card" style="text-align:center;">
             <div style="font-weight:600; color:var(--phetpaya);">Lux Meter (วัดความสว่าง)</div>
             <div id="lux-val" style="font-size:40px; font-weight:600; color:var(--google); margin:10px 0;">0 LUX</div>
@@ -87,13 +77,12 @@
             <video id="lux-preview" autoplay playsinline></video>
             <canvas id="c-buffer"></canvas>
         </div>
-
-        <div class="diag-box">
+        <div style="background: white; border-radius: 22px; padding: 24px; border: 2px dashed var(--google); text-align: center;">
             <div style="font-weight:600; color:var(--google); font-size:16px;">Diagnosis (วินิจฉัยโรคด้วยภาพ)</div>
             <p style="font-size:12px; color:#666; margin: 10px 0 15px 0;">ถ่ายภาพหรือเลือกจากเครื่องเพื่อวินิจฉัยทันที</p>
-            <input type="file" id="v-search-input" accept="image/*" capture="environment" style="display:none;" onchange="handleDiagSelection()">
-            <button type="button" class="btn-main" style="background:var(--google);" onclick="document.getElementById('v-search-input').click()">📷 ถ่ายรูปหรือเลือกภาพวินิจฉัย</button>
-            <a href="https://www.google.com/searchbyimage?sbisrc=4se" target="_blank" id="diag-result-link" class="diag-result-btn">🔍 ดูผลการวินิจฉัยพืชของคุณ</a>
+            <input type="file" id="v-search-input" accept="image/*" capture="environment" style="display:none;" onchange="document.getElementById('diag-result-link').style.display = 'block';">
+            <button class="btn-main" style="background:var(--google);" onclick="document.getElementById('v-search-input').click()">📷 ถ่ายรูปหรือเลือกภาพวินิจฉัย</button>
+            <a href="https://www.google.com/searchbyimage?sbisrc=4se" target="_blank" id="diag-result-link" style="display:none; background: var(--google); color: white; padding: 12px; border-radius: 14px; text-decoration: none; font-weight: 600; margin-top: 15px; font-size: 14px; text-align: center;">🔍 ดูผลการวินิจฉัยพืชของคุณ</a>
         </div>
     </div>
 
@@ -113,9 +102,10 @@
     <div class="modal-content">
         <h3 style="margin:0; font-size:18px; color:var(--phetpaya);">🌿 ลงทะเบียนพืชใหม่</h3>
         <input type="text" id="p-name" class="input-box" placeholder="ระบุชื่อต้นไม้">
-        <input type="file" id="p-img" class="input-box" accept="image/*" capture="environment" onchange="previewForSave()">
-        <div id="save-status" style="font-size:11px; color:var(--google); margin-top:5px; display:none;">⌛ กำลังประมวลผลภาพ...</div>
-        <button id="save-btn" class="btn-main" style="margin-top:20px;" onclick="savePlantV18()">บันทึกข้อมูลเข้าสวน</button>
+        <label style="font-size: 12px; margin-top: 15px; display: block; color: #666;">📸 แนบรูปภาพพืช:</label>
+        <input type="file" id="p-img" class="input-box" accept="image/*" capture="environment" onchange="processImage(this)">
+        <div id="upload-status" style="font-size: 11px; color: var(--phetpaya); margin-top: 5px; display: none;">⌛ กำลังเตรียมภาพ...</div>
+        <button id="save-btn" class="btn-main" style="margin-top:20px; opacity: 0.5;" onclick="savePlantV19()" disabled>บันทึกข้อมูลเข้าสวน</button>
         <button style="width:100%; border:none; background:none; margin-top:15px; color:#999;" onclick="closeModal('add-modal')">ยกเลิก</button>
     </div>
 </div>
@@ -131,9 +121,9 @@
 </div>
 
 <script>
-    let plants = JSON.parse(localStorage.getItem('phetpaya_v18_db') || "[]");
+    let plants = JSON.parse(localStorage.getItem('phetpaya_v19_db') || "[]");
     let activeId = null, activeType = '', curTemp = 31, curHum = 60;
-    let tempImgData = "";
+    let processedImageData = "";
 
     async function init() {
         try {
@@ -147,13 +137,62 @@
         renderUI();
     }
 
-    // แก้ไขระบบวินิจฉัยพืช
-    function handleDiagSelection() {
-        alert("กำลังเตรียมระบบวินิจฉัย... โปรดกดปุ่มสีน้ำเงินที่ปรากฏขึ้นเพื่อดูผลครับ");
-        document.getElementById('diag-result-link').style.display = 'block';
+    function processImage(input) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        const status = document.getElementById('upload-status');
+        const btn = document.getElementById('save-btn');
+        status.style.display = 'block';
+        status.innerText = "⌛ กำลังลดขนาดภาพ...";
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 600; 
+                const scale = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                processedImageData = canvas.toDataURL('image/jpeg', 0.7);
+                status.innerText = "✅ ภาพพร้อมแล้ว";
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 
-    // แก้ไขพิกัดและอากาศ
+    function savePlantV19() {
+        const name = document.getElementById('p-name').value;
+        if (!name || !processedImageData) return alert("กรุณาระบุชื่อและรอให้ประมวลผลรูปภาพเสร็จครับ");
+        
+        const newPlant = {
+            id: Date.now(),
+            name: name,
+            img: processedImageData,
+            lastW: Date.now() - 86400000,
+            lastF: Date.now() - 86400000,
+            logs: []
+        };
+        
+        plants.push(newPlant);
+        localStorage.setItem('phetpaya_v19_db', JSON.stringify(plants));
+        processedImageData = "";
+        document.getElementById('p-name').value = "";
+        document.getElementById('p-img').value = "";
+        document.getElementById('upload-status').style.display = 'none';
+        closeModal('add-modal');
+        renderUI();
+        alert("บันทึกสำเร็จ!");
+    }
+
     function updateWeatherAnalysis() {
         const analyze = (t, h) => {
             curTemp = t; curHum = h;
@@ -249,37 +288,8 @@
             }
             return p;
         });
-        localStorage.setItem('phetpaya_v18_db', JSON.stringify(plants));
+        localStorage.setItem('phetpaya_v19_db', JSON.stringify(plants));
         closeModal('care-modal'); renderUI();
-    }
-
-    // ฟังก์ชันช่วยประมวลผลภาพบนมือถือ
-    function previewForSave() {
-        const file = document.getElementById('p-img').files[0];
-        if(!file) return;
-        document.getElementById('save-status').style.display = 'block';
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = 400; canvas.height = (img.height/img.width)*400;
-                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                tempImgData = canvas.toDataURL('image/jpeg', 0.6);
-                document.getElementById('save-status').innerText = "✅ ภาพพร้อมบันทึกแล้ว";
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function savePlantV18() {
-        const name = document.getElementById('p-name').value;
-        if(!name || !tempImgData) return alert("กรุณาระบุชื่อและใส่รูปต้นไม้ (รอรูปประมวลผลเสร็จสักครู่)");
-        plants.push({ id: Date.now(), name: name, img: tempImgData, lastW: Date.now()-86400000, lastF: Date.now()-86400000, logs: [] });
-        localStorage.setItem('phetpaya_v18_db', JSON.stringify(plants));
-        tempImgData = ""; document.getElementById('save-status').style.display = 'none';
-        closeModal('add-modal'); renderUI();
     }
 
     async function startLuxMeter() {
