@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phetpaya Garden - Pro V14</title>
+    <title>Phetpaya Garden - Pro V15</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --phetpaya: #2D5A27; --danger: #FF5252; --google: #4285F4; --bg: #F8FAF8; --line-shop: #00B900; --line-oa: #06C755; }
+        :root { --phetpaya: #2D5A27; --danger: #FF5252; --google: #4285F4; --bg: #F8FAF8; --line-shop: #00B900; --line-oa: #06C755; --disabled: #BDC3C7; }
         body { font-family: 'Kanit', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 90px; color: #2C3E50; }
         .app-header { background: #fff; padding: 15px 20px; border-bottom: 1px solid #edf2ed; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
         .container { padding: 16px; max-width: 500px; margin: auto; }
         .page-content { display: none; }
         .page-content.active { display: block; }
 
-        /* Weather Analysis Box */
+        /* Weather Hero */
         .weather-hero { background: linear-gradient(135deg, #388E3C, var(--phetpaya)); color: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 8px 15px rgba(45,90,39,0.15); }
-        .risk-tag { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; font-size: 11px; margin-top: 10px; display: inline-block; }
 
         /* Plant Card */
         .plant-card { background: white; border-radius: 22px; padding: 18px; margin-bottom: 16px; border: 1px solid #f0f4f0; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
@@ -28,13 +27,14 @@
 
         /* Action Buttons */
         .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-        .btn-action { background: #fff; border: 1px solid #eee; padding: 12px 5px; border-radius: 15px; text-align: center; cursor: pointer; font-size: 11px; font-weight: 600; }
+        .btn-action { background: #fff; border: 1px solid #eee; padding: 10px 5px; border-radius: 15px; text-align: center; cursor: pointer; font-size: 11px; font-weight: 600; transition: 0.2s; }
+        .btn-action.done { background: var(--soft-green); color: #999; border: 1px solid #ddd; cursor: not-allowed; opacity: 0.7; }
         .btn-main { background: var(--phetpaya); color: white; border: none; padding: 15px; border-radius: 18px; width: 100%; font-weight: 600; cursor: pointer; font-size: 16px; }
 
         /* Report & Shop Link */
         .report-item { background: white; border-radius: 18px; padding: 15px; margin-bottom: 12px; border: 1px solid #eee; }
-        .shop-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-shop); color: white; padding: 6px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; margin-right: 5px; }
-        .oa-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-oa); color: white; padding: 6px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; }
+        .shop-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-shop); color: white; padding: 8px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; margin-right: 5px; }
+        .oa-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-oa); color: white; padding: 8px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; }
 
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #edf2ed; padding: 10px 0 25px 0; z-index: 1000; }
         .nav-item { flex: 1; text-align: center; font-size: 11px; color: #BDC3C7; cursor: pointer; }
@@ -57,20 +57,19 @@
 <div class="container">
     
     <div id="page-home" class="page-content active">
-        <div class="weather-hero">
+        <div class="weather-hero" id="weather-box">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <div id="weather-status" style="font-size:14px; font-weight:600;">☀️ สภาพอากาศวันนี้</div>
-                    <div id="temp-display" style="font-size:26px; font-weight:600; margin-top:4px;">31°C</div>
+                    <div id="weather-status" style="font-size:14px; font-weight:600;">📍 กำลังระบุพิกัด...</div>
+                    <div id="temp-display" style="font-size:26px; font-weight:600; margin-top:4px;">--°C</div>
                 </div>
-                <div id="weather-icon" style="font-size:36px;">🌡️</div>
+                <div style="font-size:36px;">🌡️</div>
             </div>
-            <div id="smart-analysis" class="risk-tag">ระบบกำลังวิเคราะห์แผนการดูแล...</div>
-            <div id="disease-alert" style="margin-top:10px; font-size:11px; opacity:0.9; line-height:1.4;">
-                เฝ้าระวัง: ช่วงนี้อากาศแห้ง ระวังเพลี้ยไฟระบาดในยอดอ่อน
+            <div id="disease-alert" style="margin-top:10px; font-size:12px; opacity:0.9; line-height:1.4; border-top:1px solid rgba(255,255,255,0.2); padding-top:10px;">
+                ระบบกำลังวิเคราะห์แผนการปลูกและการระวังโรคประจำวัน...
             </div>
         </div>
-        <button class="btn-main" onclick="openModal('add-modal')">＋ ลงทะเบียนต้นไม้ใหม่</button>
+        <button class="btn-main" onclick="openModal('add-modal')">＋ ลงทะเบียนพืชใหม่</button>
         <div id="plantList" style="margin-top:20px;"></div>
     </div>
 
@@ -78,21 +77,22 @@
         <h3>🔍 เครื่องมืออัจฉริยะ</h3>
         <div class="plant-card" style="text-align:center;">
             <div style="font-weight:600; color:var(--phetpaya);">Lux Meter (วัดความสว่าง)</div>
-            <div id="lux-val" style="font-size:40px; font-weight:600; color:var(--google); margin:15px 0;">0 LUX</div>
+            <div id="lux-val" style="font-size:40px; font-weight:600; color:var(--google); margin:10px 0;">0 LUX</div>
+            <div id="lux-analysis" style="font-size:13px; color:var(--phetpaya); font-weight:600; margin-bottom:15px;">- กรุณากดเริ่มวัดแสง -</div>
             <button class="btn-main" style="background:#f0f0f0; color:#333;" onclick="startLuxMeter()">เริ่มวัดค่าแสง</button>
             <video id="lux-preview" autoplay playsinline></video>
             <canvas id="c-buffer"></canvas>
         </div>
 
         <div class="plant-card" style="text-align:center; border: 2px dashed var(--google);">
-            <div style="font-weight:600; color:var(--google);">Diagnosis (วินิจฉัยโรคด้วยภาพ)</div>
-            <p style="font-size:12px; color:#666; margin-bottom:15px;">ถ่ายภาพเพื่อระบุชนิดหรือวินิจฉัยโรค</p>
-            <button class="btn-main" style="background:var(--google);" onclick="window.open('https://www.google.com/searchbyimage?sbisrc=4se', '_blank')">📷 ถ่ายรูปและวิเคราะห์ผ่าน Google</button>
+            <div style="font-weight:600; color:var(--google);">Diagnosis (วินิจฉัยโรคจากภาพ)</div>
+            <p style="font-size:12px; color:#666; margin-bottom:15px;">อัปโหลดรูปภาพหรือถ่ายใหม่เพื่อค้นหาข้อมูล</p>
+            <button class="btn-main" style="background:var(--google);" onclick="window.open('https://www.google.com/searchbyimage?sbisrc=4se', '_blank')">📷 เลือกรูปภาพเพื่อวินิจฉัย</button>
         </div>
     </div>
 
     <div id="page-report" class="page-content">
-        <h3 style="display:flex; align-items:center; gap:8px;">📑 รายงานการดูแล <span id="report-count" style="font-size:12px; background:#eee; padding:2px 8px; border-radius:10px; color:#666;">0</span></h3>
+        <h3 style="display:flex; align-items:center; gap:8px;">📑 รายงานการดูแล <span id="report-count" style="font-size:12px; background:#eee; padding:2px 8px; border-radius:10px;">0</span></h3>
         <div id="master-log"></div>
     </div>
 
@@ -107,9 +107,10 @@
 <div id="care-modal" class="modal">
     <div class="modal-content">
         <h3 id="care-plant-name" style="margin:0; color:var(--phetpaya);"></h3>
-        <label style="font-size:12px; margin-top:15px; display:block;">บันทึกโน้ต (ระบุอาการเพื่อรับคำแนะนำ):</label>
-        <textarea id="care-note" class="input-box" rows="3" placeholder="เช่น พบแมลง, ใบเริ่มเหลือง, แตกยอดใหม่..."></textarea>
+        <label style="font-size:12px; margin-top:15px; display:block;">บันทึกโน้ต (ระบุอาการเพื่อดึงสินค้าแนะนำ):</label>
+        <textarea id="care-note" class="input-box" rows="3" placeholder="เช่น พบหนอน, มีเพลี้ยระบาด, ใบเหลือง..."></textarea>
         <button class="btn-main" style="margin-top:20px;" onclick="saveCareLog()">บันทึกข้อมูล</button>
+        <button style="width:100%; border:none; background:none; margin-top:10px; color:#999;" onclick="closeModal('care-modal')">ยกเลิก</button>
     </div>
 </div>
 
@@ -118,17 +119,14 @@
         <h3>🌱 ลงทะเบียนพืช</h3>
         <input type="text" id="p-name" class="input-box" placeholder="ชื่อต้นไม้ เช่น ทุเรียนหมอนทอง">
         <input type="file" id="p-img" class="input-box" accept="image/*" capture="environment">
-        <button class="btn-main" style="margin-top:20px;" onclick="savePlantV14()">บันทึกข้อมูล</button>
+        <button class="btn-main" style="margin-top:20px;" onclick="savePlantV15()">บันทึกข้อมูล</button>
         <button style="width:100%; border:none; background:none; margin-top:10px; color:#999;" onclick="closeModal('add-modal')">ยกเลิก</button>
     </div>
 </div>
 
 <script>
-    let plants = JSON.parse(localStorage.getItem('phetpaya_v14_db') || "[]");
-    let activeId = null;
-    let activeType = '';
-    let curTemp = 31;
-    let curHum = 60;
+    let plants = JSON.parse(localStorage.getItem('phetpaya_v15_db') || "[]");
+    let activeId = null, activeType = '', curTemp = 31, curHum = 60;
 
     async function init() {
         try {
@@ -142,17 +140,15 @@
         renderUI();
     }
 
-    // แก้ไขระบบ GPS และสภาพอากาศ (V14 Fix)
     function updateWeatherAnalysis() {
         const analyze = (t, h) => {
             curTemp = t; curHum = h;
             document.getElementById('temp-display').innerText = Math.round(t) + "°C";
-            let risk = h > 80 ? "⚠️ ระวังเชื้อราและรากเน่า (ความชื้นสูง)" : "☀️ อากาศปกติ ดูแลตามรอบ";
-            if(t > 34) risk = "🔥 ระวังใบไหม้และแมลงปากดูด (ร้อนจัด)";
-            document.getElementById('smart-analysis').innerText = risk;
+            let advice = h > 80 ? "⚠️ ระวังรากเน่าและเชื้อรา (ความชื้นสูง) แนะนำฉีดพ่นไตรโคเดอร์มา" : "✅ สภาพอากาศปกติ รดน้ำตามรอบปกติ";
+            if(t > 34) advice = "🔥 อากาศร้อนจัด ระวังใบไหม้และเพลี้ยไฟ แนะนำพ่นน้ำละอองฝอยช่วงเช้า";
+            document.getElementById('disease-alert').innerText = advice;
             renderUI();
         };
-
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
                 try {
@@ -169,26 +165,33 @@
     function renderUI() {
         const list = document.getElementById('plantList');
         const report = document.getElementById('master-log');
-        const now = Date.now();
+        const now = new Date();
+        const todayStr = now.toLocaleDateString('th-TH');
         
         list.innerHTML = plants.map(p => {
-            // Adaptive Schedule
-            let wGap = (curTemp > 34) ? 1 : 3; 
-            const nextW = new Date(p.lastW + (wGap * 86400000));
+            const nextW = new Date(p.lastW + ((curTemp > 34 ? 1 : 3) * 86400000));
             const nextF = new Date(p.lastF + (15 * 86400000));
+            
+            // เช็คว่าวันนี้บันทึกไปหรือยัง
+            const isWateredToday = new Date(p.lastW).toLocaleDateString('th-TH') === todayStr;
+            const isFertToday = new Date(p.lastF).toLocaleDateString('th-TH') === todayStr;
 
             return `
                 <div class="plant-card">
                     <img src="${p.img}" class="plant-img">
                     <div style="font-weight:600; font-size:18px;">${p.name}</div>
                     <div style="margin-top:8px;">
-                        <span class="schedule-tag ${nextW < now ? 'tag-danger' : 'tag-water'}">💧 รดน้ำ: ${nextW.toLocaleDateString('th-TH')}</span>
-                        <span class="schedule-tag ${nextF < now ? 'tag-danger' : 'tag-fert'}">🧪 ปุ๋ย: ${nextF.toLocaleDateString('th-TH')}</span>
+                        <span class="schedule-tag ${nextW < now ? 'tag-danger' : 'tag-water'}">💧 รดน้ำถัดไป: ${nextW.toLocaleDateString('th-TH')}</span>
+                        <span class="schedule-tag ${nextF < now ? 'tag-danger' : 'tag-fert'}">🧪 ปุ๋ยถัดไป: ${nextF.toLocaleDateString('th-TH')}</span>
                     </div>
                     <div class="btn-group">
-                        <div class="btn-action" onclick="openCare(${p.id}, 'water', '${p.name}')">💧 รดน้ำ</div>
-                        <div class="btn-action" onclick="openCare(${p.id}, 'fert', '${p.name}')">🧪 ใส่ปุ๋ย</div>
-                        <div class="btn-action" onclick="switchTab('tools', document.querySelectorAll('.nav-item')[1])">🔍 วินิจฉัย</div>
+                        <div class="btn-action ${isWateredToday ? 'done' : ''}" onclick="${isWateredToday ? '' : `openCare(${p.id}, 'water', '${p.name}')`}">
+                            ${isWateredToday ? '✅ บันทึกแล้ว' : '💧 รดน้ำ'}
+                        </div>
+                        <div class="btn-action ${isFertToday ? 'done' : ''}" onclick="${isFertToday ? '' : `openCare(${p.id}, 'fert', '${p.name}')`}">
+                            ${isFertToday ? '✅ บันทึกแล้ว' : '🧪 ใส่ปุ๋ย'}
+                        </div>
+                        <a href="https://line.me/R/oaMessage/@phetpaya/?ปรึกษาเรื่อง${p.name}" class="btn-action" style="color:var(--line-oa); text-decoration:none;">💬 ปรึกษาพืช</a>
                     </div>
                 </div>
             `;
@@ -197,18 +200,26 @@
         const allLogs = plants.flatMap(p => p.logs.map(l => ({ name: p.name, ...l })));
         document.getElementById('report-count').innerText = allLogs.length;
         report.innerHTML = allLogs.sort((a,b) => b.time - a.time).map(l => {
-            let shopLink = "";
-            if(l.note.includes("แมลง") || l.note.includes("เพลี้ย")) shopLink = `<a href="https://shop.line.me/@phetpaya/p1" class="shop-btn-mini">🛒 ซื้อยากำจัดแมลง</a>`;
-            if(l.note.includes("รา") || l.note.includes("เน่า")) shopLink = `<a href="https://shop.line.me/@phetpaya/p2" class="shop-btn-mini">🛒 ซื้อยาแก้รา</a>`;
-            if(l.note.includes("เหลือง")) shopLink = `<a href="https://shop.line.me/@phetpaya/p3" class="shop-btn-mini">🛒 ซื้อวิตามินพืช</a>`;
+            // Keyword AI Logic
+            let product = "";
+            const note = l.note.toLowerCase();
+            if(note.includes("หนอน") || note.includes("แมลง") || note.includes("เพลี้ย")) {
+                product = `<a href="https://shop.line.me/@phetpaya/p1" class="shop-btn-mini">🛒 ซื้อยากำจัดแมลง/เพลี้ย</a>`;
+            } else if(note.includes("รา") || note.includes("เน่า") || note.includes("จุด")) {
+                product = `<a href="https://shop.line.me/@phetpaya/p2" class="shop-btn-mini">🛒 ซื้อยาแก้เชื้อรา/รากเน่า</a>`;
+            } else if(note.includes("ใบ") || note.includes("เหลือง") || note.includes("ดอก")) {
+                product = `<a href="https://shop.line.me/@phetpaya/p3" class="shop-btn-mini">🛒 ซื้อปุ๋ยบำรุงใบ/ดอก</a>`;
+            }
 
             return `
                 <div class="report-item">
                     <div style="font-weight:600; font-size:14px;">${l.name}: ${l.text}</div>
                     <div style="font-size:12px; color:#666; margin-top:5px;">📝 โน้ต: ${l.note || '-'}</div>
                     <div style="font-size:11px; color:#999; margin-top:5px;">🕒 ${new Date(l.time).toLocaleString('th-TH')} | 🌡️ ${l.weather}</div>
-                    ${shopLink}
-                    <a href="https://line.me/R/oaMessage/@phetpaya/?สอบถามเรื่อง${l.name}" class="oa-btn-mini">💬 ปรึกษาหมอพืช</a>
+                    <div style="margin-top:10px;">
+                        ${product}
+                        <a href="https://line.me/R/oaMessage/@phetpaya/?สอบถามปัญหา${l.note}" class="oa-btn-mini">💬 ปรึกษาหมอพืช</a>
+                    </div>
                 </div>
             `;
         }).join('') || "<p style='text-align:center; color:#999;'>ยังไม่มีข้อมูล</p>";
@@ -227,19 +238,18 @@
         plants = plants.map(p => {
             if(p.id === activeId) {
                 if(activeType === 'water') p.lastW = now; else p.lastF = now;
-                p.logs.unshift({ time: now, text: (activeType==='water'?'รดน้ำ':'ใส่ปุ๋ย')+"เรียบร้อย", note: note, weather: `${Math.round(curTemp)}°C` });
+                p.logs.unshift({ time: now, text: (activeType==='water'?'รดน้ำ':'ให้ปุ๋ย')+"เรียบร้อย", note: note, weather: `${Math.round(curTemp)}°C` });
             }
             return p;
         });
-        localStorage.setItem('phetpaya_v14_db', JSON.stringify(plants));
-        closeModal('care-modal'); renderUI();
+        localStorage.setItem('phetpaya_v15_db', JSON.stringify(plants));
+        closeModal('care-modal'); renderUI(); alert("บันทึกข้อมูลสำเร็จ!");
     }
 
-    function savePlantV14() {
+    function savePlantV15() {
         const name = document.getElementById('p-name').value;
         const file = document.getElementById('p-img').files[0];
-        if(!name || !file) return alert("กรุณาระบุชื่อและถ่ายรูปต้นไม้ครับ");
-
+        if(!name || !file) return alert("กรุณาระบุชื่อและใส่รูปต้นไม้");
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();
@@ -247,8 +257,8 @@
                 const canvas = document.createElement('canvas');
                 canvas.width = 400; canvas.height = (img.height/img.width)*400;
                 canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                plants.push({ id: Date.now(), name: name, img: canvas.toDataURL('image/jpeg', 0.6), lastW: Date.now(), lastF: Date.now(), logs: [] });
-                localStorage.setItem('phetpaya_v14_db', JSON.stringify(plants));
+                plants.push({ id: Date.now(), name: name, img: canvas.toDataURL('image/jpeg', 0.6), lastW: Date.now()-86400000, lastF: Date.now()-86400000, logs: [] });
+                localStorage.setItem('phetpaya_v15_db', JSON.stringify(plants));
                 closeModal('add-modal'); renderUI();
             };
             img.src = e.target.result;
@@ -266,10 +276,15 @@
                 canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
                 const pix = canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
                 let b = 0; for(let i=0; i<pix.length; i+=4) b += (pix[i]+pix[i+1]+pix[i+2])/3;
-                document.getElementById('lux-val').innerText = Math.round((b/(pix.length/4))*15) + " LUX";
+                const lux = Math.round((b/(pix.length/4))*15);
+                document.getElementById('lux-val').innerText = lux + " LUX";
+                
+                let analysis = lux < 800 ? "🌚 แสงน้อย: เหมาะกับเฟิร์น/พลูด่าง" : (lux < 2500 ? "⛅ แสงรำไร: เหมาะกับไม้ใบในบ้าน" : "☀️ แสงจัด: เหมาะกับพืชสวน/ไม้ผล");
+                document.getElementById('lux-analysis').innerText = analysis;
+                
                 stream.getTracks().forEach(t => t.stop());
             }, 1000);
-        } catch(e) { alert("กรุณาเปิดกล้องหน้า"); }
+        } catch(e) { alert("กรุณาเปิดกล้องหน้าเพื่อวัดแสง"); }
     }
 
     function switchTab(id, el) {
