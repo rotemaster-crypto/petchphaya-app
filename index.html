@@ -3,171 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phetpaya Garden - Pro Plant Care</title>
+    <title>Phetpaya Garden - Unified System</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --phetpaya: #2D5A27; --phetpaya-light: #E8F5E9; --danger: #FF5252; --google: #4285F4; --line-shop: #00B900; --text-dark: #2C3E50; --bg-soft: #F8FAF8; }
-        body { font-family: 'Kanit', sans-serif; background-color: var(--bg-soft); margin: 0; padding-bottom: 90px; color: var(--text-dark); -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Kanit', sans-serif; background-color: var(--bg-soft); margin: 0; padding-bottom: 90px; color: var(--text-dark); }
         
-        /* Header & Greetings */
-        .app-header { background: #fff; padding: 20px; border-bottom: 1px solid #edf2ed; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
-        .welcome-text { font-size: 13px; color: #7F8C8D; margin-top: 4px; }
-        
+        .app-header { background: #fff; padding: 20px; border-bottom: 1px solid #edf2ed; position: sticky; top: 0; z-index: 100; }
         .container { padding: 16px; max-width: 500px; margin: auto; }
         .page-content { display: none; animation: fadeIn 0.3s ease; }
         .page-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Weather Hero Section */
-        .hero-weather { background: linear-gradient(135deg, #388E3C, var(--phetpaya)); color: white; border-radius: 24px; padding: 20px; margin-bottom: 24px; box-shadow: 0 10px 20px rgba(45, 90, 39, 0.2); }
-        .weather-info { display: flex; align-items: center; justify-content: space-between; }
-        .seasonal-tip { background: rgba(255,255,255,0.15); padding: 12px; border-radius: 16px; margin-top: 15px; font-size: 13px; border-left: 4px solid #FFF176; }
-
-        /* Plant Card Style - PlantIn Inspired */
+        /* Hero & Cards */
+        .hero-card { background: linear-gradient(135deg, #388E3C, var(--phetpaya)); color: white; border-radius: 24px; padding: 20px; margin-bottom: 24px; }
         .plant-card { background: white; border-radius: 24px; padding: 20px; margin-bottom: 16px; border: 1px solid #f0f4f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .plant-name { font-size: 18px; font-weight: 600; color: var(--phetpaya); }
-        .schedule-row { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
-        .badge { font-size: 11px; padding: 6px 12px; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
-        .badge-water { background: #E3F2FD; color: #1976D2; }
-        .badge-fert { background: #FFF3E0; color: #E65100; }
-        .badge-overdue { background: #FFEBEE; color: var(--danger); border: 1px solid rgba(255, 82, 82, 0.2); }
+        
+        /* Status Badges */
+        .badge-row { display: flex; gap: 8px; margin: 12px 0; }
+        .badge { font-size: 11px; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
+        .bg-water { background: #E3F2FD; color: #1976D2; }
+        .bg-fert { background: #FFF3E0; color: #E65100; }
+        .bg-danger { background: #FFEBEE; color: var(--danger); }
 
-        /* Buttons */
-        .btn-action-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-        .btn-mini { border: 1px solid #eee; background: #fff; padding: 10px 4px; border-radius: 14px; font-size: 11px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .btn-mini:active { background: var(--phetpaya-light); transform: scale(0.95); }
-        .btn-add { background: var(--phetpaya); color: white; border: none; padding: 16px; border-radius: 18px; width: 100%; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(45, 90, 39, 0.2); margin-bottom: 25px; cursor: pointer; }
+        /* Action Buttons */
+        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .btn-small { border: 1px solid #eee; background: #fff; padding: 10px 2px; border-radius: 14px; font-size: 11px; text-align: center; cursor: pointer; }
+        .btn-primary { background: var(--phetpaya); color: white; border: none; padding: 16px; border-radius: 18px; width: 100%; font-weight: 600; margin-bottom: 20px; cursor: pointer; }
 
-        /* Tools Page */
-        .tool-box { background: #fff; border-radius: 24px; padding: 24px; border: 1px solid #edf2ed; text-align: center; margin-bottom: 16px; }
-        .btn-lens { background: var(--google); color: white; padding: 14px; border-radius: 16px; width: 100%; border: none; font-weight: 600; margin-top: 15px; font-size: 15px; }
-
-        /* Navigation Bar */
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; border-top: 1px solid #edf2ed; padding: 10px 0 25px 0; z-index: 1000; }
-        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #BDC3C7; cursor: pointer; transition: 0.3s; }
+        /* Nav Bar */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #eee; padding: 10px 0 25px 0; z-index: 1000; }
+        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #BDC3C7; cursor: pointer; }
         .nav-item.active { color: var(--phetpaya); }
-        .nav-icon { font-size: 24px; display: block; margin-bottom: 4px; }
 
         /* Modals */
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; padding:20px; box-sizing: border-box; }
-        .modal-content { background:white; padding:28px; border-radius:28px; width:100%; max-width: 400px; position: relative; }
-        .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid #E0E0E0; margin-top: 10px; font-size: 16px; outline: none; box-sizing: border-box; }
-        .shop-card { background: #F9FBF9; border-radius: 18px; padding: 15px; margin-top: 15px; border: 1px solid #E8F5E9; border-left: 5px solid var(--line-shop); }
-        .btn-buy { background: var(--line-shop); color: white; text-decoration: none; display: block; text-align: center; padding: 12px; border-radius: 12px; margin-top: 10px; font-weight: 600; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; padding:20px; }
+        .modal-content { background:white; padding:25px; border-radius:28px; width:100%; max-width: 400px; box-sizing: border-box; }
+        .input-std { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid #E0E0E0; margin-top: 10px; font-size: 16px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="app-header">
-    <div>
-        <h1 style="margin:0; font-size:20px; color:var(--phetpaya)">Phetpaya Garden</h1>
-        <div id="welcome" class="welcome-text">ยินดีต้อนรับ...</div>
-    </div>
-    <div style="font-size:24px;">🌿</div>
+    <h1 style="margin:0; font-size:18px; color:var(--phetpaya)">Phetpaya Garden</h1>
+    <div id="welcome" style="font-size:12px; color:#999;">สวัสดีครับ...</div>
 </div>
 
 <div class="container">
     
     <div id="page-home" class="page-content active">
-        <div class="hero-weather">
-            <div class="weather-info">
-                <div>
-                    <div style="font-size:13px; opacity:0.9;">สมุทรปราการ, วันนี้</div>
-                    <div style="font-size:26px; font-weight:600;">31°C ท้องฟ้าแจ่มใส</div>
-                </div>
-                <div style="font-size:40px;">☀️</div>
-            </div>
-            <div class="seasonal-tip">
-                <b>Seasonal Alert:</b> ช่วงนี้ความชื้นต่ำ ระวังเชื้อราในทุเรียนและเพลี้ยไฟในไม้ใบ
-            </div>
+        <div class="hero-card">
+            <div style="font-size:13px; opacity:0.8;">สภาพอากาศวันนี้</div>
+            <div style="font-size:24px; font-weight:600;">31°C แดดจัด ☀️</div>
+            <p style="font-size:12px; margin-top:10px; border-top:1px solid rgba(255,255,255,0.2); padding-top:10px;">
+                💡 <b>Smart Tip:</b> รดน้ำต้นไม้ในช่วงเช้าเพื่อลดการสะสมของเชื้อรา
+            </p>
         </div>
-        
-        <button class="btn-add" onclick="openModal('add-modal')">＋ เพิ่มต้นไม้ใหม่เข้าสวน</button>
+        <button class="btn-primary" onclick="openModal('add-modal')">＋ ลงทะเบียนต้นไม้ใหม่</button>
         <div id="plantList"></div>
     </div>
 
     <div id="page-tools" class="page-content">
-        <h3 style="margin-left:5px;">🔍 เครื่องมือวิเคราะห์</h3>
-        
-        <div class="tool-box">
-            <div style="font-size:35px;">📷</div>
-            <div style="font-weight:600; margin-top:10px;">วินิจฉัยโรคและสายพันธุ์</div>
-            <p style="font-size:13px; color:#7F8C8D;">ถ่ายรูปใบหรือจุดที่มีปัญหา เพื่อให้ Google ช่วยวิเคราะห์ทันที</p>
-            <button class="btn-lens" onclick="handleLensLaunch()">เปิด Google Lens</button>
-        </div>
-
-        <div class="tool-box">
-            <div style="font-size:35px;">☀️</div>
-            <div style="font-weight:600; margin-top:10px;">เครื่องมือวัดแสง (Light Meter)</div>
-            <div id="lux-value" style="font-size:32px; font-weight:600; color:var(--phetpaya); margin:10px 0;">0 LUX</div>
-            <button class="btn-mini" style="width:100%; border:none; background:#eee;" onclick="startLightMeter()">เริ่มวัดค่าแสง</button>
+        <h3>🔍 เครื่องมืออัจฉริยะ</h3>
+        <div class="plant-card" style="text-align:center; border:2px dashed var(--google);">
+            <div style="font-weight:600; color:var(--google);">Diagnostic Camera</div>
+            <button class="btn-primary" style="background:var(--google); margin-top:10px;" onclick="handleLens()">เปิด Google Lens สแกนพืช</button>
         </div>
     </div>
 
     <div id="page-report" class="page-content">
-        <h3 style="margin-left:5px;">📑 รายงาน & ผู้เชี่ยวชาญ</h3>
-        <div id="report-details"></div>
-        <div class="plant-card" style="border-left:5px solid var(--line-shop);">
-            <div style="font-weight:600; color:var(--line-shop);">💬 Botanist Hotline</div>
-            <p style="font-size:13px; color:#666;">หาก AI วิเคราะห์ไม่ได้ ปรึกษานักพฤกษศาสตร์เพชรพญาได้โดยตรง</p>
-            <a href="https://line.me/R/oaMessage/@phetpaya/" class="btn-buy">แชทกับผู้เชี่ยวชาญ</a>
+        <h3>📑 รายงานสุขภาพสวน</h3>
+        <div id="journal-list"></div>
+        <div class="plant-card" style="background:var(--phetpaya-light); border:none;">
+            <div style="font-weight:600; color:var(--phetpaya);">💬 ปรึกษาผู้เชี่ยวชาญ</div>
+            <a href="https://line.me/R/oaMessage/@phetpaya/" style="display:block; background:var(--line-shop); color:white; text-align:center; padding:12px; border-radius:12px; text-decoration:none; margin-top:10px; font-weight:600;">คุยกับนักพฤกษศาสตร์</a>
         </div>
     </div>
 
 </div>
 
 <div class="nav-bar">
-    <div class="nav-item active" onclick="switchTab('home', this)">
-        <span class="nav-icon">🏡</span>สวนของฉัน
-    </div>
-    <div class="nav-item" onclick="switchTab('tools', this)">
-        <span class="nav-icon">🔍</span>เครื่องมือ
-    </div>
-    <div class="nav-item" onclick="switchTab('report', this)">
-        <span class="nav-icon">📑</span>รายงาน
+    <div class="nav-item active" onclick="switchTab('home', this)">🏡<br>สวนของฉัน</div>
+    <div class="nav-item" onclick="switchTab('tools', this)">🔍<br>เครื่องมือ</div>
+    <div class="nav-item" onclick="switchTab('report', this)">📑<br>รายงาน</div>
+</div>
+
+<div id="add-modal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin:0;">🌱 เพิ่มต้นไม้</h3>
+        <input type="text" id="p-name" class="input-std" placeholder="ระบุชื่อ เช่น ทุเรียนหมอนทอง">
+        <button class="btn-primary" style="margin-top:20px; margin-bottom:0;" onclick="saveNewPlant()">บันทึกเข้าสวน</button>
+        <button style="width:100%; background:none; border:none; margin-top:15px; color:#999;" onclick="closeModal('add-modal')">ยกเลิก</button>
     </div>
 </div>
 
 <div id="issue-modal" class="modal">
     <div class="modal-content">
-        <h3 id="target-plant-name" style="margin:0; color:var(--phetpaya); font-size:18px;"></h3>
-        <label style="font-size:13px; font-weight:600; margin-top:20px; display:block;">พบปัญหาที่พืชของคุณ:</label>
-        <select id="issue-select" class="input-std" onchange="showRecommendation()">
-            <option value="">-- โปรดระบุอาการ --</option>
-            <option value="pest">พบเพลี้ย / แมลงรบกวน</option>
-            <option value="fungi">พบเชื้อรา / รากเน่า / ใบจุด</option>
-            <option value="yellow">ใบเหลือง / พืชไม่เติบโต</option>
+        <h3 id="target-plant" style="margin:0; color:var(--phetpaya);"></h3>
+        <select id="issue-select" class="input-std" onchange="showShop()">
+            <option value="">-- ระบุปัญหาที่พบ --</option>
+            <option value="pest">พบเพลี้ย / แมลง</option>
+            <option value="fungi">พบเชื้อรา / รากเน่า</option>
+            <option value="nutri">ใบเหลือง / ขาดสารอาหาร</option>
         </select>
-
-        <div id="shop-area" style="display:none;">
-            <div id="advice-text" style="font-size:13px; color:#666; margin-top:15px; line-height:1.5;"></div>
-            <div class="shop-card">
-                <div id="product-name" style="font-weight:600; font-size:14px;"></div>
-                <a id="buy-btn" href="#" target="_blank" class="btn-buy">🛒 สั่งซื้อสินค้าทาง LINE Shop</a>
-            </div>
+        <div id="shop-area" style="display:none; margin-top:15px; padding:15px; background:#f9f9f9; border-radius:15px; border-left:4px solid var(--line-shop);">
+            <div id="advice-text" style="font-size:13px; color:#666; margin-bottom:10px;"></div>
+            <a id="buy-link" href="#" target="_blank" style="display:block; background:var(--line-shop); color:white; text-align:center; padding:10px; border-radius:10px; text-decoration:none; font-weight:600;">🛒 สั่งซื้อสินค้า</a>
         </div>
-        <button class="btn-add" style="margin-top:20px; margin-bottom:0;" onclick="saveIssueLog()">บันทึกข้อมูลและปิด</button>
-    </div>
-</div>
-
-<div id="add-modal" class="modal">
-    <div class="modal-content">
-        <h3 style="margin:0; font-size:18px;">🌱 เพิ่มต้นไม้ใหม่</h3>
-        <input type="text" id="p-name" class="input-std" placeholder="เช่น ทุเรียนหมอนทอง, กวักมรกต">
-        <button class="btn-add" style="margin-top:20px; margin-bottom:0;" onclick="addPlant()">บันทึกเข้าสวน</button>
-        <button style="width:100%; background:none; border:none; margin-top:15px; color:#999;" onclick="closeModal('add-modal')">ยกเลิก</button>
+        <button class="btn-primary" style="margin-top:20px;" onclick="commitIssue()">บันทึกข้อมูล</button>
     </div>
 </div>
 
 <script>
-    let plants = JSON.parse(localStorage.getItem('phetpaya_pro_v7') || "[]");
-    let currentPlantId = null;
+    // ระบบการลงข้อมูล (Unified Data Storage)
+    let plants = JSON.parse(localStorage.getItem('phetpaya_v8_master') || "[]");
+    let activePlantId = null;
 
-    const shopDB = {
-        pest: { advice: "แนะนำฉีดพ่นสารกำจัดแมลงช่วงเย็น และหมั่นตรวจดูหลังใบ", product: "เพชรพญา PestKill (290.-)", link: "https://shop.line.me/@phetpaya/1" },
-        fungi: { advice: "งดรดน้ำทางใบชั่วคราว และใช้ไตรโคเดอร์มาจัดการเชื้อรา", product: "ชุดแก้รากเน่าเพชรพญา (350.-)", link: "https://shop.line.me/@phetpaya/2" },
-        yellow: { advice: "พืชขาดธาตุอาหารรอง แนะนำให้เสริมวิตามินพืชทางใบ", product: "Phetpaya Plus (320.-)", link: "https://shop.line.me/@phetpaya/3" }
+    const shopData = {
+        pest: { advice: "ควรใช้สารกำจัดแมลง และหมั่นล้างใบ", link: "https://shop.line.me/@phetpaya/1" },
+        fungi: { advice: "ใช้ไตรโคเดอร์มา และงดรดน้ำช่วงเย็น", link: "https://shop.line.me/@phetpaya/2" },
+        nutri: { advice: "เสริมธาตุอาหารรองทางใบ", link: "https://shop.line.me/@phetpaya/3" }
     };
 
     async function init() {
@@ -178,7 +134,112 @@
                 document.getElementById("welcome").innerText = "ผู้ดูแล: คุณ " + profile.displayName;
             } else { liff.login(); }
         } catch (e) {}
-        render();
+        refreshUI();
+    }
+
+    // ระบบการเรียกใช้และบันทึกข้อมูล (Fetch & Save)
+    function saveNewPlant() {
+        const name = document.getElementById('p-name').value;
+        if(!name) return;
+        const newPlant = {
+            id: Date.now(),
+            name: name,
+            waterDate: Date.now(),
+            fertDate: Date.now(),
+            logs: [],
+            guide: `https://www.google.com/search?q=วิธีปลูก+${encodeURIComponent(name)}`
+        };
+        plants.push(newPlant);
+        sync();
+        closeModal('add-modal');
+        document.getElementById('p-name').value = "";
+    }
+
+    function sync() {
+        localStorage.setItem('phetpaya_v8_master', JSON.stringify(plants));
+        refreshUI();
+    }
+
+    function refreshUI() {
+        const list = document.getElementById('plantList');
+        const journal = document.getElementById('journal-list');
+        const now = Date.now();
+
+        // แสดงหน้าสวน
+        if(plants.length === 0) {
+            list.innerHTML = "<p style='text-align:center; color:#999; margin-top:40px;'>ยังไม่มีต้นไม้ในสวน</p>";
+        } else {
+            list.innerHTML = plants.map(p => {
+                const wDays = Math.floor((now - p.waterDate) / 86400000);
+                const fDays = Math.floor((now - p.fertDate) / 86400000);
+                return `
+                    <div class="plant-card">
+                        <div style="font-weight:600; font-size:18px;">${p.name}</div>
+                        <div class="badge-row">
+                            <span class="badge ${wDays >= 3 ? 'bg-danger' : 'bg-water'}">💧 ${wDays >= 3 ? 'เกินกำหนด' : 'อีก ' + (3 - wDays) + ' วัน'}</span>
+                            <span class="badge ${fDays >= 15 ? 'bg-danger' : 'bg-fert'}">🧪 ${fDays >= 15 ? 'เกินกำหนด' : 'อีก ' + (15 - fDays) + ' วัน'}</span>
+                        </div>
+                        <a href="${p.guide}" target="_blank" style="font-size:12px; color:var(--google); text-decoration:none;">📖 คู่มือการปลูกจาก Google</a>
+                        <div class="btn-grid">
+                            <div class="btn-small" onclick="updateAction(${p.id}, 'water')">💧 รดน้ำ</div>
+                            <div class="btn-small" onclick="updateAction(${p.id}, 'fert')">🧪 ใส่ปุ๋ย</div>
+                            <div class="btn-small" style="color:var(--danger)" onclick="openIssue(${p.id}, '${p.name}')">🚨 ปัญหา</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // แสดงหน้ารายงาน (Unified Journal)
+        const allLogs = plants.flatMap(p => p.logs.map(l => ({ name: p.name, ...l })));
+        journal.innerHTML = allLogs.length ? allLogs.map(l => `
+            <div class="plant-card" style="padding:15px; font-size:13px;">
+                <strong>${l.name}</strong>: ${l.issue} <br>
+                <small style="color:#999;">บันทึกเมื่อ: ${l.date}</small>
+            </div>
+        `).join('') : "<p style='text-align:center; color:#999;'>ไม่มีประวัติปัญหา</p>";
+    }
+
+    function updateAction(id, type) {
+        plants = plants.map(p => {
+            if(p.id === id) {
+                if(type === 'water') p.waterDate = Date.now();
+                else p.fertDate = Date.now();
+            }
+            return p;
+        });
+        sync();
+    }
+
+    function openIssue(id, name) {
+        activePlantId = id;
+        document.getElementById('target-plant').innerText = name;
+        document.getElementById('issue-select').value = "";
+        document.getElementById('shop-area').style.display = "none";
+        openModal('issue-modal');
+    }
+
+    function showShop() {
+        const val = document.getElementById('issue-select').value;
+        if(!val) return;
+        document.getElementById('advice-text').innerText = "💡 " + shopData[val].advice;
+        document.getElementById('buy-link').href = shopData[val].link;
+        document.getElementById('shop-area').style.display = "block";
+    }
+
+    function commitIssue() {
+        const sel = document.getElementById('issue-select');
+        if(!sel.value) return;
+        const log = {
+            issue: sel.options[sel.selectedIndex].text,
+            date: new Date().toLocaleDateString('th-TH')
+        };
+        plants = plants.map(p => {
+            if(p.id === activePlantId) p.logs.unshift(log);
+            return p;
+        });
+        sync();
+        closeModal('issue-modal');
     }
 
     function switchTab(pageId, el) {
@@ -188,103 +249,9 @@
         el.classList.add('active');
     }
 
-    function handleLensLaunch() {
+    function handleLens() {
         window.location.href = "googleapp://lens";
         setTimeout(() => { if (document.hasFocus()) window.open("https://www.google.com/searchbyimage?sbisrc=4se", '_blank'); }, 1000);
-    }
-
-    function startLightMeter() {
-        let mockLux = Math.floor(Math.random() * 4500) + 500;
-        document.getElementById('lux-value').innerText = mockLux + " LUX";
-    }
-
-    function addPlant() {
-        const name = document.getElementById('p-name').value;
-        if(!name) return;
-        plants.push({ 
-            id: Date.now(), 
-            name: name, 
-            lastWater: new Date().getTime(),
-            lastFert: new Date().getTime(),
-            issues: [],
-            guide: `https://www.google.com/search?q=วิธีปลูก+${encodeURIComponent(name)}+การดูแลรักษา`
-        });
-        localStorage.setItem('phetpaya_pro_v7', JSON.stringify(plants));
-        closeModal('add-modal');
-        render();
-    }
-
-    function render() {
-        const list = document.getElementById('plantList');
-        if(!plants.length) { list.innerHTML = "<p style='text-align:center; color:#999; margin-top:40px;'>เริ่มสร้าง Digital Garden ของคุณวันนี้!</p>"; return; }
-        
-        const now = new Date().getTime();
-        list.innerHTML = plants.map(p => {
-            const wDiff = Math.floor((now - p.lastWater) / (1000 * 60 * 60 * 24));
-            const fDiff = Math.floor((now - p.lastFert) / (1000 * 60 * 60 * 24));
-            
-            return `
-                <div class="plant-card">
-                    <div class="plant-name">${p.name}</div>
-                    <div class="schedule-row">
-                        <span class="badge ${wDiff >= 3 ? 'badge-overdue' : 'badge-water'}">💧 ${wDiff >= 3 ? 'เกินกำหนด' : 'อีก ' + (3 - wDiff) + ' วัน'}</span>
-                        <span class="badge ${fDiff >= 15 ? 'badge-overdue' : 'badge-fert'}">🧪 ${fDiff >= 15 ? 'เกินกำหนด' : 'อีก ' + (15 - fDiff) + ' วัน'}</span>
-                    </div>
-                    <a href="${p.guide}" target="_blank" style="font-size:12px; color:var(--google); text-decoration:none;">📖 ดูคู่มือการดูแลจาก Google</a>
-                    <div class="btn-action-group">
-                        <div class="btn-mini" onclick="updateLog(${p.id}, 'water')">💧 รดน้ำ</div>
-                        <div class="btn-mini" onclick="updateLog(${p.id}, 'fert')">🧪 ใส่ปุ๋ย</div>
-                        <div class="btn-mini" style="color:var(--danger)" onclick="openIssueModal(${p.id}, '${p.name}')">🚨 แจ้งปัญหา</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        updateReport();
-    }
-
-    function updateLog(id, type) {
-        plants = plants.map(p => {
-            if(p.id === id) { if(type === 'water') p.lastWater = new Date().getTime(); else p.lastFert = new Date().getTime(); }
-            return p;
-        });
-        localStorage.setItem('phetpaya_pro_v7', JSON.stringify(plants));
-        render();
-    }
-
-    function openIssueModal(id, name) {
-        currentPlantId = id;
-        document.getElementById('target-plant-name').innerText = name;
-        document.getElementById('issue-select').value = "";
-        document.getElementById('shop-area').style.display = 'none';
-        document.getElementById('issue-modal').style.display = 'flex';
-    }
-
-    function showRecommendation() {
-        const val = document.getElementById('issue-select').value;
-        if(!val) return;
-        const data = shopDB[val];
-        document.getElementById('advice-text').innerText = "💡 คำแนะนำ: " + data.advice;
-        document.getElementById('product-name').innerText = "แนะนำ: " + data.product;
-        document.getElementById('buy-btn').href = data.link;
-        document.getElementById('shop-area').style.display = 'block';
-    }
-
-    function saveIssueLog() {
-        const sel = document.getElementById('issue-select');
-        if(sel.value) {
-            plants = plants.map(p => {
-                if(p.id === currentPlantId) p.issues.unshift({ t: sel.options[sel.selectedIndex].text, d: new Date().toLocaleDateString('th-TH') });
-                return p;
-            });
-            localStorage.setItem('phetpaya_pro_v7', JSON.stringify(plants));
-        }
-        document.getElementById('issue-modal').style.display = 'none';
-        render();
-    }
-
-    function updateReport() {
-        const allIssues = plants.flatMap(p => p.issues.map(i => `${p.name}: ${i.t} (${i.d})`));
-        document.getElementById('report-details').innerHTML = `<div class="plant-card"><strong>Health Journal</strong><ul style="font-size:13px; color:#666; margin-top:10px; padding-left:20px;">${allIssues.map(i => `<li>${i}</li>`).join('') || 'ไม่มีรายงานความผิดปกติ'}</ul></div>`;
     }
 
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
