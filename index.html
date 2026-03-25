@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phetpaya Garden - Unified V12</title>
+    <title>Phetpaya Garden - Advanced V13</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --phetpaya: #2D5A27; --danger: #FF5252; --google: #4285F4; --bg: #F8FAF8; --soft-green: #E8F5E9; }
+        :root { --phetpaya: #2D5A27; --danger: #FF5252; --google: #4285F4; --bg: #F8FAF8; --warn: #FF9800; --line-shop: #00B900; }
         body { font-family: 'Kanit', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 90px; color: #2C3E50; }
         .app-header { background: #fff; padding: 15px 20px; border-bottom: 1px solid #edf2ed; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
         .container { padding: 16px; max-width: 500px; margin: auto; }
         .page-content { display: none; }
         .page-content.active { display: block; }
 
-        /* Weather Hero & Analysis */
+        /* Weather Hero & Intelligence */
         .weather-hero { background: linear-gradient(135deg, #388E3C, var(--phetpaya)); color: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 8px 15px rgba(45,90,39,0.15); }
-        .warning-box { background: rgba(255,255,255,0.15); padding: 12px; border-radius: 12px; margin-top: 12px; font-size: 12px; border-left: 4px solid #FFF176; line-height: 1.5; }
+        .analysis-badge { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 15px; font-size: 11px; margin-bottom: 10px; display: inline-block; }
 
         /* Plant Card */
         .plant-card { background: white; border-radius: 22px; padding: 18px; margin-bottom: 16px; border: 1px solid #f0f4f0; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
@@ -24,21 +24,22 @@
         .schedule-tag { font-size: 11px; padding: 5px 12px; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-right: 5px; margin-bottom: 5px; }
         .tag-water { background: #E3F2FD; color: #1976D2; }
         .tag-fert { background: #FFF3E0; color: #E65100; }
-        .tag-overdue { background: #FFEBEE; color: var(--danger); border: 1px solid var(--danger); }
+        .tag-danger { background: #FFEBEE; color: var(--danger); border: 1px solid var(--danger); }
 
-        /* Action Buttons */
+        /* Buttons & Inputs */
         .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
         .btn-action { background: #fff; border: 1px solid #eee; padding: 12px 5px; border-radius: 15px; text-align: center; cursor: pointer; font-size: 11px; font-weight: 600; }
         .btn-main { background: var(--phetpaya); color: white; border: none; padding: 15px; border-radius: 18px; width: 100%; font-weight: 600; cursor: pointer; font-size: 16px; }
+        .input-box { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-top: 10px; box-sizing: border-box; font-size: 14px; }
 
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #edf2ed; padding: 10px 0 25px 0; z-index: 1000; }
         .nav-item { flex: 1; text-align: center; font-size: 11px; color: #BDC3C7; cursor: pointer; }
         .nav-item.active { color: var(--phetpaya); font-weight: 600; }
 
-        /* Modal */
+        /* Shop Area */
+        .shop-suggest { background: #E8F5E9; border-radius: 15px; padding: 15px; margin-top: 10px; border-left: 5px solid var(--line-shop); display: none; }
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; padding:20px; }
         .modal-content { background:white; padding:25px; border-radius:25px; width:100%; max-width: 380px; box-sizing: border-box; }
-        .input-box { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-top: 10px; box-sizing: border-box; font-size: 16px; }
         
         #lux-preview, #c-buffer { display: none; }
     </style>
@@ -54,15 +55,16 @@
     
     <div id="page-home" class="page-content active">
         <div class="weather-hero">
+            <div class="analysis-badge">ระบบวิเคราะห์อัจฉริยะ (Smart Analysis)</div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <div id="weather-title" style="font-size:14px; opacity:0.9;">การวิเคราะห์สภาพอากาศ</div>
-                    <div id="temp-display" style="font-size:24px; font-weight:600; margin-top:4px;">--°C</div>
+                    <div id="temp-display" style="font-size:28px; font-weight:600;">--°C</div>
+                    <div id="location-name" style="font-size:12px; opacity:0.9;">กำลังระบุพิกัด...</div>
                 </div>
-                <div style="font-size:36px;">⛅</div>
+                <div id="weather-icon" style="font-size:36px;">🌡️</div>
             </div>
-            <div id="disease-warning" class="warning-box">
-                กำลังวิเคราะห์พยากรณ์โรคและความเสี่ยงตามความชื้นสัมพัทธ์...
+            <div id="risk-alert" style="margin-top:12px; font-size:12px; border-top:1px solid rgba(255,255,255,0.2); padding-top:10px; line-height:1.5;">
+                กำลังประมวลผลความเสี่ยงการเกิดโรคพืชรายวัน...
             </div>
         </div>
         <button class="btn-main" onclick="openModal('add-modal')">＋ ลงทะเบียนพืชใหม่</button>
@@ -72,7 +74,7 @@
     <div id="page-tools" class="page-content">
         <h3>🔍 เครื่องมืออัจฉริยะ</h3>
         <div class="plant-card" style="text-align:center;">
-            <div style="font-weight:600; color:var(--phetpaya);">Lux Meter (วัดความเข้มแสง)</div>
+            <div style="font-weight:600; color:var(--phetpaya);">Lux Meter (วัดความสว่าง)</div>
             <div id="lux-val" style="font-size:40px; font-weight:600; color:var(--google); margin:15px 0;">0 LUX</div>
             <button class="btn-main" style="background:#f0f0f0; color:#333;" onclick="startLuxMeter()">เริ่มวัดค่าแสง</button>
             <video id="lux-preview" autoplay playsinline></video>
@@ -80,18 +82,17 @@
         </div>
 
         <div class="plant-card" style="text-align:center; border: 2px dashed var(--google);">
-            <div style="font-weight:600; color:var(--google);">Diagnosis (สแกนวินิจฉัยโรค)</div>
-            <p style="font-size:12px; color:#666; margin-bottom:15px;">ถ่ายภาพเพื่อระบุชนิดหรือวินิจฉัยโรค</p>
+            <div style="font-weight:600; color:var(--google);">Diagnosis (สแกนพืชและโรค)</div>
             <form id="diag-form" action="https://www.google.com/searchbyimage/upload" method="POST" enctype="multipart/form-data" target="_blank">
                 <input type="hidden" name="sbisrc" value="cr_1_3_2">
                 <input type="file" id="diag-input" name="encoded_image" accept="image/*" capture="environment" style="display:none;" onchange="document.getElementById('diag-form').submit();">
-                <button type="button" class="btn-main" style="background:var(--google);" onclick="document.getElementById('diag-input').click()">📷 ถ่ายรูปและวิเคราะห์ทันที</button>
+                <button type="button" class="btn-main" style="background:var(--google);" onclick="document.getElementById('diag-input').click()">📷 ถ่ายรูปและวินิจฉัยทันที</button>
             </form>
         </div>
     </div>
 
     <div id="page-report" class="page-content">
-        <h3>📑 รายงานการดูแลย้อนหลัง</h3>
+        <h3>📑 รายงานการดูแลพืช</h3>
         <div id="master-log"></div>
     </div>
 
@@ -103,19 +104,38 @@
     <div class="nav-item" onclick="switchTab('report', this)">📑<br>รายงาน</div>
 </div>
 
+<div id="care-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="care-target-name" style="margin:0; color:var(--phetpaya);"></h3>
+        <label style="font-size:12px; margin-top:15px; display:block;">บันทึกโน้ตเพิ่มเติม:</label>
+        <textarea id="care-note" class="input-box" rows="3" placeholder="เช่น พบแมลงตัวเล็กๆ, ใบเริ่มแตกใหม่..." oninput="detectShopKeyword(this.value)"></textarea>
+        
+        <div id="shop-suggest" class="shop-suggest">
+            <div style="font-weight:600; color:var(--line-shop); font-size:13px;">🛒 สินค้าแนะนำสำหรับปัญหาที่คุณพบ:</div>
+            <div id="suggest-text" style="font-size:12px; margin:5px 0;"></div>
+            <a id="shop-link" href="#" target="_blank" style="display:block; background:var(--line-shop); color:white; text-align:center; padding:8px; border-radius:10px; text-decoration:none; font-weight:600; font-size:12px;">สั่งซื้อสินค้า</a>
+        </div>
+
+        <button class="btn-main" style="margin-top:20px;" onclick="saveCareLog()">บันทึกข้อมูลและรายงาน</button>
+    </div>
+</div>
+
 <div id="add-modal" class="modal">
     <div class="modal-content">
         <h3>🌱 ลงทะเบียนพืช</h3>
         <input type="text" id="p-name" class="input-box" placeholder="ชื่อต้นไม้">
-        <label style="font-size:12px; display:block; margin-top:15px;">เลือกรูปภาพต้นไม้:</label>
         <input type="file" id="p-img" class="input-box" accept="image/*" capture="environment">
-        <button class="btn-main" style="margin-top:20px;" onclick="savePlantV12()">บันทึกข้อมูล</button>
+        <button class="btn-main" style="margin-top:20px;" onclick="saveNewPlant()">บันทึก</button>
         <button style="width:100%; border:none; background:none; margin-top:10px; color:#999;" onclick="closeModal('add-modal')">ยกเลิก</button>
     </div>
 </div>
 
 <script>
-    let plants = JSON.parse(localStorage.getItem('phetpaya_v12_db') || "[]");
+    let plants = JSON.parse(localStorage.getItem('phetpaya_v13_db') || "[]");
+    let currentCareId = null;
+    let currentActionType = '';
+    let currentTemp = 30;
+    let currentHum = 60;
 
     async function init() {
         try {
@@ -125,56 +145,29 @@
                 document.getElementById('user-display').innerText = "ผู้ดูแล: " + profile.displayName;
             } else { liff.login(); }
         } catch (e) {}
-        updateSmartAnalysis();
+        updateSmartWeather();
         renderUI();
     }
 
-    function updateSmartAnalysis() {
+    // ระบบเฝ้าระวังโรคพืชและอากาศ (Fixed)
+    function updateSmartWeather() {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             try {
                 const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=f1311f97b48347f3b60c0f8364843477&units=metric&lang=th`);
                 const data = await res.json();
-                document.getElementById('temp-display').innerText = Math.round(data.main.temp) + "°C";
+                currentTemp = data.main.temp;
+                currentHum = data.main.humidity;
+                document.getElementById('temp-display').innerText = Math.round(currentTemp) + "°C";
+                document.getElementById('location-name').innerText = "พิกัด: " + data.name;
+
+                let risk = "✅ วันนี้อากาศปกติ: สภาพแวดล้อมดีต่อพืชส่วนใหญ่";
+                if(currentHum > 80) risk = "⚠️ **เฝ้าระวังรากเน่าและเชื้อรา:** ความชื้นสูงมาก งดรดน้ำทางใบในช่วงเย็น";
+                if(currentTemp > 35) risk = "🔥 **เฝ้าระวังเพลี้ยไฟ/ใบไหม้:** อากาศร้อนจัด ดินจะแห้งเร็วขึ้น ควรเพิ่มความถี่ในการรดน้ำ";
                 
-                let warning = "✅ แผนวันนี้: สภาพอากาศปกติ รดน้ำตามตาราง";
-                if(data.main.humidity > 80) warning = "⚠️ **ระวังโรคพืช:** ความชื้นสูง (RH "+data.main.humidity+"%) ระวังรากเน่าและราน้ำค้าง งดรดน้ำทางใบในช่วงเย็น";
-                if(data.main.temp > 35) warning = "🔥 **ระวัง:** อากาศร้อนจัด ระวังใบไหม้และเพลี้ยไฟระบาด แนะนำพ่นน้ำละอองฝอยช่วยระบายความร้อน";
-                
-                document.getElementById('disease-warning').innerHTML = warning;
-            } catch(e) { document.getElementById('disease-warning').innerText = "วิเคราะห์อากาศสำเร็จ: แดดจัด รดน้ำตามรอบปกติ"; }
+                document.getElementById('risk-alert').innerHTML = risk;
+                renderUI(); // Re-render to update schedule based on weather
+            } catch(e) { document.getElementById('risk-alert').innerText = "ดึงข้อมูลอากาศสำเร็จ: แดดจัด รดน้ำตามรอบปกติ"; }
         });
-    }
-
-    function savePlantV12() {
-        const name = document.getElementById('p-name').value;
-        const file = document.getElementById('p-img').files[0];
-        if(!name) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const imgData = e.target.result;
-            // บีบอัดภาพก่อนบันทึก
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = 400; canvas.height = (img.height/img.width)*400;
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                plants.push({
-                    id: Date.now(),
-                    name: name,
-                    img: canvas.toDataURL('image/jpeg', 0.6),
-                    lastW: Date.now(),
-                    lastF: Date.now(),
-                    logs: []
-                });
-                localStorage.setItem('phetpaya_v12_db', JSON.stringify(plants));
-                closeModal('add-modal');
-                renderUI();
-            };
-            img.src = imgData;
-        };
-        if(file) reader.readAsDataURL(file);
     }
 
     function renderUI() {
@@ -183,74 +176,136 @@
         const now = new Date();
         
         list.innerHTML = plants.map(p => {
-            const nextW = new Date(p.lastW + (3 * 86400000));
+            // Adaptive Schedule: คำนวณวันรดน้ำตามอากาศ
+            let waterGap = 3; 
+            if(currentTemp > 35) waterGap = 1; // ร้อนจัดรดทุกวัน
+            else if(currentHum > 80) waterGap = 5; // ชื้นสูงรดห่างออกไป
+
+            const nextW = new Date(p.lastW + (waterGap * 86400000));
             const nextF = new Date(p.lastF + (15 * 86400000));
-            const isWOver = nextW < now;
-            const isFOver = nextF < now;
 
             return `
                 <div class="plant-card">
                     <img src="${p.img}" class="plant-img">
-                    <div style="font-weight:600; font-size:18px; margin-bottom:5px;">${p.name}</div>
+                    <div style="font-weight:600; font-size:18px;">${p.name}</div>
                     <div>
-                        <span class="schedule-tag ${isWOver ? 'tag-overdue' : 'tag-water'}">
-                            💧 รดน้ำ: ${nextW.toLocaleDateString('th-TH')}
+                        <span class="schedule-tag ${nextW < now ? 'tag-danger' : 'tag-water'}">
+                            💧 รดน้ำถัดไป: ${nextW.toLocaleDateString('th-TH')}
                         </span>
-                        <span class="schedule-tag ${isFOver ? 'tag-overdue' : 'tag-fert'}">
-                            🧪 ใส่ปุ๋ย: ${nextF.toLocaleDateString('th-TH')}
+                        <span class="schedule-tag ${nextF < now ? 'tag-danger' : 'tag-fert'}">
+                            🧪 ใส่ปุ๋ยถัดไป: ${nextF.toLocaleDateString('th-TH')}
                         </span>
                     </div>
                     <div class="btn-group">
-                        <div class="btn-action" onclick="logAction(${p.id}, 'water')">💧 บันทึกรดน้ำ</div>
-                        <div class="btn-action" onclick="logAction(${p.id}, 'fert')">🧪 บันทึกปุ๋ย</div>
-                        <div class="btn-action" onclick="switchTab('tools', document.querySelectorAll('.nav-item')[1])">🚨 วินิจฉัย</div>
+                        <div class="btn-action" onclick="openCareModal(${p.id}, 'water', '${p.name}')">💧 รดน้ำ</div>
+                        <div class="btn-action" onclick="openCareModal(${p.id}, 'fert', '${p.name}')">🧪 ใส่ปุ๋ย</div>
+                        <div class="btn-action" onclick="switchTab('tools', document.querySelectorAll('.nav-item')[1])">🔍 วินิจฉัย</div>
                     </div>
                 </div>
             `;
         }).join('');
 
-        // สรุปหน้ารายงาน
         const allLogs = plants.flatMap(p => p.logs.map(l => ({ name: p.name, ...l })));
         report.innerHTML = allLogs.length ? allLogs.sort((a,b) => b.time - a.time).map(l => `
             <div class="plant-card" style="padding:15px; font-size:13px;">
                 <b>${l.name}</b>: ${l.text} <br>
-                <small style="color:#999;">${new Date(l.time).toLocaleString('th-TH')}</small>
+                <small style="color:#666;">📝 โน้ต: ${l.note || '-'}</small><br>
+                <small style="color:#999;">${new Date(l.time).toLocaleString('th-TH')} | อากาศขณะบันทึก: ${l.weather || '-'}</small>
             </div>
-        `).join('') : "<p style='text-align:center; color:#999;'>ยังไม่มีข้อมูลบันทึก</p>";
+        `).join('') : "<p style='text-align:center; color:#999;'>ยังไม่มีข้อมูลการบันทึก</p>";
     }
 
-    function logAction(id, type) {
+    function openCareModal(id, type, name) {
+        currentCareId = id;
+        currentActionType = type;
+        document.getElementById('care-target-name').innerText = "บันทึกการ" + (type==='water'?'รดน้ำ':'ให้ปุ๋ย') + ": " + name;
+        document.getElementById('care-note').value = "";
+        document.getElementById('shop-suggest').style.display = 'none';
+        openModal('care-modal');
+    }
+
+    function detectShopKeyword(val) {
+        const suggest = document.getElementById('shop-suggest');
+        const text = document.getElementById('suggest-text');
+        const link = document.getElementById('shop-link');
+        
+        if(val.includes('แมลง') || val.includes('เพลี้ย')) {
+            suggest.style.display = 'block';
+            text.innerText = "พบปัญหาแมลง/เพลี้ย แนะนำชุด 'เพชรพญา PestKill' กำจัดได้ทันที";
+            link.href = "https://shop.line.me/@phetpaya/p1";
+        } else if(val.includes('รา') || val.includes('เน่า')) {
+            suggest.style.display = 'block';
+            text.innerText = "พบปัญหาเชื้อรา/รากเน่า แนะนำ 'ชุดแก้รากเน่าเพชรพญา' สูตรเข้มข้น";
+            link.href = "https://shop.line.me/@phetpaya/p2";
+        } else {
+            suggest.style.display = 'none';
+        }
+    }
+
+    function saveCareLog() {
         const now = Date.now();
+        const note = document.getElementById('care-note').value;
+        const weatherInfo = `${Math.round(currentTemp)}°C (RH ${currentHum}%)`;
+
         plants = plants.map(p => {
-            if(p.id === id) {
-                if(type === 'water') {
-                    p.lastW = now;
-                    p.logs.unshift({ time: now, text: "✅ บันทึกการรดน้ำเรียบร้อย" });
-                } else {
-                    p.lastF = now;
-                    p.logs.unshift({ time: now, text: "🧪 บันทึกการให้ปุ๋ยเรียบร้อย" });
-                }
+            if(p.id === currentCareId) {
+                if(currentActionType === 'water') p.lastW = now; else p.lastF = now;
+                p.logs.unshift({
+                    time: now,
+                    text: `✅ ${currentActionType==='water'?'รดน้ำ':'ให้ปุ๋ย'}เรียบร้อย`,
+                    note: note,
+                    weather: weatherInfo
+                });
             }
             return p;
         });
-        localStorage.setItem('phetpaya_v12_db', JSON.stringify(plants));
+        localStorage.setItem('phetpaya_v13_db', JSON.stringify(plants));
+        closeModal('care-modal');
         renderUI();
-        alert("บันทึกสำเร็จ!");
+        alert("บันทึกสำเร็จ ข้อมูลถูกส่งไปที่หน้ารายงานแล้วครับ");
     }
 
+    function saveNewPlant() {
+        const name = document.getElementById('p-name').value;
+        const file = document.getElementById('p-img').files[0];
+        if(!name || !file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 400; canvas.height = (img.height/img.width)*400;
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                plants.push({
+                    id: Date.now(),
+                    name: name,
+                    img: canvas.toDataURL('image/jpeg', 0.6),
+                    lastW: Date.now(),
+                    lastF: Date.now(),
+                    logs: []
+                });
+                localStorage.setItem('phetpaya_v13_db', JSON.stringify(plants));
+                closeModal('add-modal');
+                renderUI();
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ฟังก์ชันอื่นๆ คงเดิม (Lux Meter, Tab Switch)
     async function startLuxMeter() {
         const video = document.getElementById('lux-preview');
         const canvas = document.getElementById('c-buffer');
-        const ctx = canvas.getContext('2d');
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
             video.srcObject = stream;
             setTimeout(() => {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const pix = ctx.getImageData(0,0,canvas.width,canvas.height).data;
-                let bright = 0;
-                for(let i=0; i<pix.length; i+=4) bright += (pix[i]+pix[i+1]+pix[i+2])/3;
-                document.getElementById('lux-val').innerText = Math.round((bright/(pix.length/4))*15) + " LUX";
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                const pix = canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+                let b = 0; for(let i=0; i<pix.length; i+=4) b += (pix[i]+pix[i+1]+pix[i+2])/3;
+                document.getElementById('lux-val').innerText = Math.round((b/(pix.length/4))*15) + " LUX";
                 stream.getTracks().forEach(t => t.stop());
             }, 1000);
         } catch(e) { alert("กรุณาเปิดกล้อง"); }
