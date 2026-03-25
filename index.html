@@ -6,16 +6,19 @@
     <title>เพชรพญา - คำนวณการใช้ปุ๋ย</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        :root { --primary-color: #2e7d32; --secondary-color: #f1f8e9; }
-        body { font-family: 'Kanit', sans-serif; background-color: #f0f2f0; margin: 0; padding: 20px; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .header { text-align: center; color: var(--primary-color); }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .btn { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        #resultArea { margin-top: 20px; display: none; padding: 15px; background-color: var(--secondary-color); border-left: 5px solid var(--primary-color); border-radius: 8px; }
-        .product-img { width: 100px; height: auto; display: block; margin: 10px auto; }
+        :root { --primary: #2e7d32; --bg: #f4f9f4; }
+        body { font-family: sans-serif; background-color: var(--bg); margin: 0; padding: 15px; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        .header { text-align: center; margin-bottom: 25px; }
+        h2 { color: var(--primary); margin: 0; }
+        .welcome-msg { color: #666; font-size: 14px; margin-top: 5px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+        .btn-calc { width: 100%; background-color: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        #result { margin-top: 25px; display: none; padding: 20px; background-color: #e8f5e9; border-radius: 15px; border: 1px solid #c8e6c9; }
+        .buy-btn { display: block; width: 100%; background-color: #00b900; color: white; text-align: center; text-decoration: none; padding: 12px; border-radius: 10px; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -23,81 +26,66 @@
 <div class="card">
     <div class="header">
         <h2>เครื่องมือคำนวณปุ๋ยเพชรพญา</h2>
-        <p>ยินดีต้อนรับคุณ <span id="userName" style="font-weight: bold;">...</span></p>
+        <div id="welcome" class="welcome-msg">กำลังโหลดข้อมูล...</div>
     </div>
 
     <div class="input-group">
-        <label>ประเภทพืชที่ปลูก</label>
-        <select id="plantType">
-            <option value="durian">ทุเรียน (บำรุงต้น/ฟื้นฟู)</option>
-            <option value="rice">ข้าว (เร่งราก/แตกกอ)</option>
-            <option value="fruit">ไม้ผลอื่นๆ</option>
+        <label>ปลูกพืชชนิดใด?</label>
+        <select id="plant">
+            <option value="durian">ทุเรียน (ฟื้นฟูต้น)</option>
+            <option value="rice">ข้าว (เร่งราก)</option>
+            <option value="fruit">ผลไม้อื่นๆ</option>
         </select>
     </div>
 
     <div class="input-group">
         <label>จำนวนพื้นที่ (ไร่)</label>
-        <input type="number" id="areaSize" placeholder="ใส่จำนวนไร่" min="1">
+        <input type="number" id="area" placeholder="เช่น 5, 10">
     </div>
 
-    <button class="btn" onclick="calculate()">คำนวณจำนวนที่ต้องใช้</button>
+    <button class="btn-calc" onclick="calculate()">คำนวณจำนวนที่ต้องใช้</button>
 
-    <div id="resultArea">
-        <div id="recommendationText"></div>
-        <p style="font-size: 0.9em; color: #666; margin-top: 10px;">*เป็นการคำนวณเบื้องต้น ควรปรับตามสภาพดิน</p>
+    <div id="result">
+        <div id="res-text"></div>
+        <a href="https://line.me/R/oaMessage/@เพชรพญา/?สนใจปุ๋ยครับ" class="buy-btn">ปรึกษา / สั่งซื้อผ่านแชท</a>
     </div>
 </div>
 
 <script>
-    // 1. เชื่อมต่อกับ LINE
-    async function initLiff() {
+    async function init() {
         try {
-            await liff.init({ liffId: "2009595288" }); // ต้องเปลี่ยนเป็น ID ของคุณ
-            if (!liff.isLoggedIn()) {
-                liff.login();
-            } else {
+            // ใส่ LIFF ID ของคุณโดยตรง
+            await liff.init({ liffId: "2009595288-7Tm3Mher" });
+            if (liff.isLoggedIn()) {
                 const profile = await liff.getProfile();
-                document.getElementById("userName").innerText = profile.displayName;
+                document.getElementById("welcome").innerText = "ยินดีต้อนรับคุณ " + profile.displayName;
+            } else {
+                liff.login();
             }
-        } catch (err) {
-            console.error("LIFF Error", err);
+        } catch (e) {
+            console.log("LIFF Error", e);
         }
     }
 
-    // 2. ฟังก์ชันคำนวณ
     function calculate() {
-        const type = document.getElementById('plantType').value;
-        const area = document.getElementById('areaSize').value;
-        const resultDiv = document.getElementById('resultArea');
-        const textDiv = document.getElementById('recommendationText');
-
-        if (!area || area <= 0) {
-            alert("กรุณาระบุจำนวนไร่ครับ");
-            return;
-        }
+        const area = document.getElementById("area").value;
+        const plant = document.getElementById("plant").value;
+        if (!area || area <= 0) return alert("กรุณาใส่จำนวนไร่");
 
         let bags = 0;
-        let product = "";
+        let pName = "";
+        
+        if (plant === "durian") { bags = area * 2; pName = "สูตรฟื้นฟูต้น"; }
+        else if (plant === "rice") { bags = area * 1; pName = "สูตรเร่งราก"; }
+        else { bags = area * 1.5; pName = "สูตรบำรุงทั่วไป"; }
 
-        if (type === 'durian') {
-            bags = area * 1.5; // ตัวอย่าง: ทุเรียนใช้ 1.5 กระสอบ/ไร่
-            product = "เพชรพญา สูตรฟื้นฟูต้น";
-        } else if (type === 'rice') {
-            bags = area * 1; 
-            product = "เพชรพญา สูตรเร่งราก";
-        } else {
-            bags = area * 1.2;
-            product = "เพชรพญา สูตรบำรุงทั่วไป";
-        }
-
-        textDiv.innerHTML = `
-            <p>แนะนำให้ใช้: <strong>${product}</strong></p>
-            <p>จำนวนที่ต้องใช้ประมาณ: <span style="font-size: 24px; color: #2e7d32;">${bags.toFixed(1)}</span> กระสอบ</p>
-        `;
-        resultDiv.style.display = 'block';
+        document.getElementById("res-text").innerHTML = 
+            `แนะใช้: <strong>เพชรพญา ${pName}</strong><br>` +
+            `จำนวน: <span style="font-size:24px; color:#2e7d32;">${bags}</span> กระสอบ`;
+        document.getElementById("result").style.display = "block";
     }
 
-    initLiff();
+    init();
 </script>
 
 </body>
