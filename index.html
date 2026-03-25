@@ -7,171 +7,178 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --phetpaya-green: #1B5E20; --light-bg: #F5F7F5; --status-ok: #43A047; --status-warn: #FB8C00; --status-danger: #E53935; }
-        body { font-family: 'Kanit', sans-serif; background-color: var(--light-bg); margin: 0; color: #333; padding-bottom: 90px; }
+        :root { --phetpaya-green: #1B5E20; --light-bg: #F5F7F5; --status-ok: #43A047; --status-warn: #FB8C00; --status-danger: #E53935; --soft-gray: #f9f9f9; }
+        body { font-family: 'Kanit', sans-serif; background-color: var(--light-bg); margin: 0; color: #333; padding-bottom: 100px; }
         .app-header { background: #fff; padding: 15px 20px; text-align: left; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 50; }
         .container { padding: 15px; max-width: 500px; margin: auto; }
-        
-        /* Tab System */
         .page-content { display: none; }
         .page-content.active { display: block; }
 
-        /* Weather Card */
-        .weather-card { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; }
+        /* Weather & Cards */
+        .weather-card { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .plant-item { background: white; border-radius: 12px; padding: 18px; margin-bottom: 15px; border: 1px solid #e0e0e0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         
-        /* Plant Card */
-        .plant-item { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #e0e0e0; }
-        .advice-box { background: #FFF8E1; border-left: 4px solid #FFB300; padding: 10px; font-size: 13px; margin: 10px 0; border-radius: 0 8px 8px 0; }
+        /* Logging Area */
+        .log-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+        .btn-action { padding: 8px; border-radius: 8px; border: 1px solid #eee; background: var(--soft-gray); font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .btn-action:active { background: #e0e0e0; }
 
-        /* Form */
-        .btn-main { background: var(--phetpaya-green); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; }
+        /* Disease Alert Box */
+        .disease-box { background: #FFF3E0; border-left: 4px solid var(--status-warn); padding: 10px; font-size: 12px; margin-top: 10px; border-radius: 4px; }
+        .disease-history { margin-top: 10px; font-size: 11px; color: var(--status-danger); font-weight: 600; }
+
+        /* Form Elements */
+        .btn-main { background: var(--phetpaya-green); color: white; border: none; padding: 14px; border-radius: 10px; width: 100%; font-weight: 600; cursor: pointer; font-size: 16px; }
         .input-std { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         
-        /* Nav Bar */
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 12px 0; box-shadow: 0 -3px 10px rgba(0,0,0,0.05); z-index: 100; }
-        .nav-item { flex: 1; text-align: center; font-size: 12px; color: #999; cursor: pointer; transition: 0.3s; }
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 12px 0; box-shadow: 0 -3px 15px rgba(0,0,0,0.08); z-index: 100; }
+        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #999; cursor: pointer; }
         .nav-item.active { color: var(--phetpaya-green); font-weight: 600; }
-        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+        .nav-icon { font-size: 22px; display: block; margin-bottom: 2px; }
 
-        /* Forecast & Report Styles */
-        .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #eee; }
+        /* Modal */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:200; align-items:center; justify-content:center; }
+        .modal-content { background:white; padding:25px; border-radius:18px; width:85%; max-width: 400px; }
     </style>
 </head>
 <body>
 
 <div class="app-header">
-    <h1 style="margin:0; font-size:18px; color:var(--phetpaya-green)">Phetpaya Garden</h1>
-    <div id="welcome" style="font-size:11px; color:#777">กำลังโหลดข้อมูล...</div>
+    <h1 style="margin:0; font-size:20px; color:var(--phetpaya-green)">Phetpaya Garden</h1>
+    <div id="welcome" style="font-size:12px; color:#777">สวัสดีผู้ดูแลสวน...</div>
 </div>
 
 <div class="container">
     
     <div id="page-home" class="page-content active">
         <div class="weather-card">
-            <div style="font-size:12px; opacity:0.8;">📍 พิกัด: <span id="loc-text">สมุทรปราการ</span></div>
-            <div style="font-size:18px; font-weight:600; margin: 5px 0;">31°C | ความชื้น 75%</div>
+            <div style="font-size:12px; opacity:0.9;">📍 พิกัดปัจจุบัน: <span id="loc-text">สมุทรปราการ</span></div>
+            <div style="font-size:20px; font-weight:600; margin: 5px 0;">31.5°C | ⛅ ฟ้าโปร่ง</div>
             <div id="expert-alert" style="font-size:13px; border-top:1px solid rgba(255,255,255,0.2); padding-top:8px;">
-                ☀️ ฤดูร้อน: ระวังการขาดน้ำและเพลี้ยจักจั่นฝอย
+                🔎 ช่วงนี้อากาศแห้ง ระวังการระบาดของเพลี้ยไฟในยอดอ่อน
             </div>
         </div>
-        <button class="btn-main" style="margin-bottom:20px;" onclick="document.getElementById('add-modal').style.display='flex'">+ เพิ่มพืชลงทะเบียนใหม่</button>
+        <button class="btn-main" style="margin-bottom:20px;" onclick="openModal('add-modal')">➕ ลงทะเบียนพืชใหม่</button>
         <div id="plantList"></div>
     </div>
 
     <div id="page-forecast" class="page-content">
-        <h3 style="margin-top:0;">🌦️ วิเคราะห์ความเสี่ยงรายสัปดาห์</h3>
-        <div class="info-card" style="border-left: 5px solid var(--status-danger);">
-            <strong>🚨 เฝ้าระวังสูงสุด: โรครากเน่า (Root Rot)</strong>
-            <p style="font-size:13px; color:#666; margin:5px 0;">เนื่องจากพบความชื้นสะสมสูงในพื้นที่ในช่วง 3 วันที่ผ่านมา</p>
-            <div style="font-size:12px; color:var(--phetpaya-green); font-weight:600;">วิธีป้องกัน: งดการให้น้ำซ้ำ, ตรวจสอบการระบายน้ำของดิน</div>
-        </div>
-        <div class="info-card" style="border-left: 5px solid var(--status-warn);">
-            <strong>🐛 เฝ้าระวัง: เพลี้ยจักจั่นฝอย</strong>
-            <p style="font-size:13px; color:#666; margin:5px 0;">มักพบในช่วงการแตกใบอ่อนของทุเรียน</p>
-            <div style="font-size:12px; color:var(--phetpaya-green); font-weight:600;">วิธีป้องกัน: สำรวจใบอ่อนสม่ำเสมอ หากพบตัวเต็มวัยให้ใช้สารชีวภัณฑ์</div>
+        <h3 style="margin-top:0;">🌦️ ระบบพยากรณ์ความเสี่ยง</h3>
+        <div style="background: white; padding:15px; border-radius:12px; border-left: 5px solid var(--status-danger); margin-bottom:15px;">
+            <strong style="color:var(--status-danger)">🚨 เฝ้าระวังสูงสุด: ราใบติด (Rhizoctonia)</strong>
+            <p style="font-size:13px; color:#666; margin:5px 0;">พบรายงานการระบาดในเขตพื้นที่ใกล้เคียง สูงกว่าค่าเฉลี่ย 20%</p>
+            <div style="font-size:12px; color:var(--phetpaya-green); font-weight:600;">การรักษา: ใช้ไตรโคเดอร์มาผสมน้ำราดโคนต้นและฉีดพ่นใบ</div>
         </div>
     </div>
 
     <div id="page-report" class="page-content">
-        <h3 style="margin-top:0;">📑 สรุปการดูแลรายเดือน</h3>
-        <div class="info-card">
-            <div style="font-size:14px; color:#666;">จำนวนพืชทั้งหมด</div>
-            <div id="total-plants" style="font-size:24px; font-weight:600; color:var(--phetpaya-green)">0 ต้น</div>
-        </div>
-        <div class="info-card">
-            <strong>บันทึกล่าสุด</strong>
-            <div id="report-summary" style="font-size:13px; color:#666; margin-top:5px;">ยังไม่มีข้อมูลบันทึกการดูแล</div>
-        </div>
+        <h3 style="margin-top:0;">📑 รายงานภาพรวมสวน</h3>
+        <div id="report-summary-area"></div>
     </div>
 
 </div>
 
 <div class="nav-bar">
-    <div class="nav-item active" onclick="switchTab('home', this)">
-        <span class="nav-icon">📋</span> รายการพืช
-    </div>
-    <div class="nav-item" onclick="switchTab('forecast', this)">
-        <span class="nav-icon">🌦️</span> พยากรณ์โรค
-    </div>
-    <div class="nav-item" onclick="switchTab('report', this)">
-        <span class="nav-icon">📑</span> รายงาน
-    </div>
+    <div class="nav-item active" onclick="switchTab('home', this)"><span class="nav-icon">🌳</span> รายการพืช</div>
+    <div class="nav-item" onclick="switchTab('forecast', this)"><span class="nav-icon">🌦️</span> พยากรณ์โรค</div>
+    <div class="nav-item" onclick="switchTab('report', this)"><span class="nav-icon">📑</span> รายงาน</div>
 </div>
 
-<div id="add-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center;">
-    <div style="background:white; padding:20px; border-radius:15px; width:85%;">
+<div id="add-modal" class="modal">
+    <div class="modal-content">
         <h3>ลงทะเบียนพืช</h3>
-        <input type="text" id="p-name" class="input-std" placeholder="ชื่อเรียกต้นไม้">
+        <input type="text" id="p-name" class="input-std" placeholder="เช่น ทุเรียนหมอนทอง-01">
         <select id="p-type" class="input-std">
             <option value="ทุเรียน">ทุเรียน</option>
             <option value="ข้าว">ข้าว</option>
-            <option value="พืชสวน">พืชสวน/ไม้ใบ</option>
+            <option value="ไม้ใบ/ไม้ประดับ">ไม้ใบ/ไม้ประดับ</option>
         </select>
         <button class="btn-main" onclick="addPlant()">ลงทะเบียน</button>
-        <button style="width:100%; background:none; border:none; margin-top:10px; color:#999;" onclick="document.getElementById('add-modal').style.display='none'">ยกเลิก</button>
+        <button style="width:100%; background:none; border:none; margin-top:10px; color:#999;" onclick="closeModal('add-modal')">ยกเลิก</button>
+    </div>
+</div>
+
+<div id="pest-modal" class="modal">
+    <div class="modal-content">
+        <h3>🚨 บันทึกปัญหาที่พบ</h3>
+        <p id="pest-target-name" style="font-size:14px; color:var(--phetpaya-green); font-weight:600;"></p>
+        <label style="font-size:12px;">ระบุสิ่งที่พบ:</label>
+        <select id="p-issue" class="input-std">
+            <option value="เชื้อรา/รากเน่า">เชื้อรา/รากเน่า</option>
+            <option value="เพลี้ยไฟ/ไรแดง">เพลี้ยไฟ/ไรแดง</option>
+            <option value="หนอนเจาะลำต้น">หนอนเจาะลำต้น</option>
+            <option value="ใบเหลือง/ขาดสารอาหาร">ใบเหลือง/ขาดสารอาหาร</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+        </select>
+        <button class="btn-main" style="background:var(--status-danger)" onclick="savePestIssue()">บันทึกปัญหา</button>
+        <button style="width:100%; background:none; border:none; margin-top:10px; color:#999;" onclick="closeModal('pest-modal')">ยกเลิก</button>
     </div>
 </div>
 
 <script>
-    let plants = JSON.parse(localStorage.getItem('phetpaya_db') || "[]");
+    let plants = JSON.parse(localStorage.getItem('phetpaya_pro_db') || "[]");
+    let currentPestTarget = null;
 
     async function init() {
         try {
             await liff.init({ liffId: "2009595288-7Tm3Mher" });
             if (liff.isLoggedIn()) {
                 const profile = await liff.getProfile();
-                document.getElementById("welcome").innerText = "ผู้ดูแลระบบ: คุณ " + profile.displayName;
+                document.getElementById("welcome").innerText = "ผู้ดูแล: คุณ " + profile.displayName;
             } else { liff.login(); }
         } catch (e) { console.log(e); }
         renderPlants();
         updateReport();
     }
 
-    // ฟังก์ชันสลับหน้า (สำคัญ!)
     function switchTab(pageId, el) {
         document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        
         document.getElementById('page-' + pageId).classList.add('active');
         el.classList.add('active');
     }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function addPlant() {
         const name = document.getElementById('p-name').value;
         const type = document.getElementById('p-type').value;
         if(!name) return;
-        plants.push({ id: Date.now(), name: name, type: type, lastWater: 'ยังไม่มีบันทึก', lastFert: 'ยังไม่มีบันทึก' });
-        localStorage.setItem('phetpaya_db', JSON.stringify(plants));
-        document.getElementById('add-modal').style.display='none';
+        plants.push({ 
+            id: Date.now(), 
+            name: name, 
+            type: type, 
+            lastWater: '-', 
+            lastFert: '-', 
+            issues: [] 
+        });
+        localStorage.setItem('phetpaya_pro_db', JSON.stringify(plants));
+        closeModal('add-modal');
         renderPlants();
         updateReport();
     }
 
-    function renderPlants() {
-        const list = document.getElementById('plantList');
-        if(plants.length === 0) {
-            list.innerHTML = "<p style='text-align:center; color:#999;'>ยังไม่มีข้อมูลพืช ลงทะเบียนเพื่อเริ่มจดบันทึก</p>";
-            return;
-        }
-        list.innerHTML = plants.map(p => `
-            <div class="plant-item">
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <div style="font-weight:600; color:var(--phetpaya-green)">${p.name} (${p.type})</div>
-                    <span style="font-size:10px; background:#e8f5e9; padding:2px 8px; border-radius:10px; color:green;">สุขภาพปกติ</span>
-                </div>
-                <div style="font-size:12px; color:#666;">
-                    💧 รดน้ำล่าสุด: ${p.lastWater}<br>
-                    🧪 ใส่ปุ๋ยล่าสุด: ${p.lastFert}
-                </div>
-                <div class="advice-box">
-                    <strong>คำแนะนำวันนี้:</strong> แนะนำฉีดพ่นสารปรับปรุงดินช่วงเช้าเพื่อให้ดูดซึมได้ดีที่สุด
-                </div>
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                    <button style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd; background:#fff; font-size:11px;" onclick="updateLog(${p.id}, 'water')">💧 บันทึกรดน้ำ</button>
-                    <button style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd; background:#fff; font-size:11px;" onclick="updateLog(${p.id}, 'fert')">🧪 บันทึกปุ๋ย</button>
-                </div>
-            </div>
-        `).join('');
+    function openPestModal(id, name) {
+        currentPestTarget = id;
+        document.getElementById('pest-target-name').innerText = "ต้นไม้: " + name;
+        openModal('pest-modal');
+    }
+
+    function savePestIssue() {
+        const issue = document.getElementById('p-issue').value;
+        const now = new Date().toLocaleDateString('th-TH');
+        plants = plants.map(p => {
+            if(p.id === currentPestTarget) {
+                p.issues.unshift({ date: now, type: issue });
+            }
+            return p;
+        });
+        localStorage.setItem('phetpaya_pro_db', JSON.stringify(plants));
+        closeModal('pest-modal');
+        renderPlants();
+        updateReport();
     }
 
     function updateLog(id, type) {
@@ -183,16 +190,57 @@
             }
             return p;
         });
-        localStorage.setItem('phetpaya_db', JSON.stringify(plants));
+        localStorage.setItem('phetpaya_pro_db', JSON.stringify(plants));
         renderPlants();
-        updateReport();
+    }
+
+    function renderPlants() {
+        const list = document.getElementById('plantList');
+        if(plants.length === 0) {
+            list.innerHTML = "<p style='text-align:center; color:#999; margin-top:30px;'>ยังไม่มีรายการพืชในระบบ</p>";
+            return;
+        }
+        list.innerHTML = plants.map(p => `
+            <div class="plant-item">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:600; color:var(--phetpaya-green); font-size:16px;">${p.name}</div>
+                    <span style="font-size:10px; color:#999;">${p.type}</span>
+                </div>
+                
+                <div style="font-size:12px; color:#666; margin: 8px 0;">
+                    💧 รดน้ำล่าสุด: ${p.lastWater} | 🧪 ใส่ปุ๋ยล่าสุด: ${p.lastFert}
+                </div>
+
+                ${p.issues.length > 0 ? `<div class="disease-history">⚠️ พบปัญหา: ${p.issues[0].type} (${p.issues[0].date})</div>` : ''}
+
+                <div class="log-grid">
+                    <div class="btn-action" onclick="updateLog(${p.id}, 'water')"><span>💧</span>รดน้ำ</div>
+                    <div class="btn-action" onclick="updateLog(${p.id}, 'fert')"><span>🧪</span>ใส่ปุ๋ย</div>
+                    <div class="btn-action" style="color:var(--status-danger)" onclick="openPestModal(${p.id}, '${p.name}')"><span>🚨</span>พบโรค/แมลง</div>
+                </div>
+            </div>
+        `).join('');
     }
 
     function updateReport() {
-        document.getElementById('total-plants').innerText = plants.length + " ต้น";
-        if(plants.length > 0) {
-            document.getElementById('report-summary').innerText = "คุณมีการดูแลพืชสม่ำเสมอในสัปดาห์นี้ อย่าลืมตรวจสอบหน้าพยากรณ์โรคเป็นประจำ";
-        }
+        const area = document.getElementById('report-summary-area');
+        let totalIssues = 0;
+        plants.forEach(p => totalIssues += p.issues.length);
+
+        area.innerHTML = `
+            <div style="background:white; padding:15px; border-radius:12px; border:1px solid #eee; margin-bottom:10px;">
+                <div style="color:#666; font-size:14px;">สุขภาพสวนโดยรวม</div>
+                <div style="font-size:24px; font-weight:600; color:${totalIssues > 0 ? 'var(--status-warn)' : 'var(--phetpaya-green)'}">
+                    ${totalIssues > 0 ? 'พบปัญหาที่ต้องติดตาม' : 'ปกติสมบูรณ์'}
+                </div>
+            </div>
+            <div style="background:white; padding:15px; border-radius:12px; border:1px solid #eee;">
+                <strong>ประวัติปัญหาที่พบ (ย้อนหลัง):</strong>
+                <ul style="padding-left: 20px; font-size:13px; color:#666; margin-top:8px;">
+                    ${plants.flatMap(p => p.issues.map(i => `<li>${p.name}: ${i.type} (${i.date})</li>`)).join('') || '<li>ยังไม่มีบันทึกปัญหา</li>'}
+                </ul>
+            </div>
+        `;
     }
 
     init();
