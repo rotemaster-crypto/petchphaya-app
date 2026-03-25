@@ -3,114 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phetpaya Garden - Professional Journal</title>
+    <title>Phetpaya Garden - Professional Care</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --phetpaya-green: #1B5E20; --light-bg: #F5F7F5; --status-danger: #E53935; --line-chat: #06C755; --line-shop: #00b900; }
         body { font-family: 'Kanit', sans-serif; background-color: var(--light-bg); margin: 0; padding-bottom: 100px; color: #333; }
-        .container { padding: 15px; max-width: 500px; margin: auto; }
         .app-header { background: #fff; padding: 15px 20px; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 50; }
+        .container { padding: 15px; max-width: 500px; margin: auto; }
         
-        /* Plant Card */
-        .plant-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 15px; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        /* Tab Management */
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+
+        /* Weather Card */
+        .weather-card { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; border-radius: 18px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .weather-main { display: flex; justify-content: space-between; align-items: center; }
+
+        /* Plant & Info Cards */
+        .card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 15px; border: 1px solid #eee; }
         .log-btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 15px; }
-        .log-btn { padding: 10px 5px; border-radius: 10px; border: 1px solid #eee; background: #f9f9f9; font-size: 11px; cursor: pointer; text-align: center; }
-        .log-btn:active { background: #e0e0e0; }
-
-        /* History & Advice */
-        .history-tag { display: inline-block; font-size: 10px; background: #FEEBEE; color: var(--status-danger); padding: 2px 8px; border-radius: 10px; margin-top: 5px; }
-        .advice-panel { background: #E8F5E9; border-radius: 12px; padding: 15px; margin-top: 15px; border-left: 5px solid var(--phetpaya-green); display: none; }
+        .log-btn { padding: 10px; border-radius: 10px; border: 1px solid #eee; background: #f9f9f9; font-size: 11px; cursor: pointer; text-align: center; }
         
-        /* Product & Chat */
-        .shop-area { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
-        .action-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: 600; margin-top: 8px; cursor: pointer; display: block; text-decoration: none; text-align: center; font-size: 14px; }
-
-        /* Navigation */
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 12px 0; z-index: 100; }
-        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #999; }
+        /* Navigation Bar */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 12px 0; z-index: 100; box-shadow: 0 -3px 10px rgba(0,0,0,0.05); }
+        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #999; cursor: pointer; }
         .nav-item.active { color: var(--phetpaya-green); font-weight: 600; }
-        
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
         /* Modal */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:200; align-items:center; justify-content:center; }
         .modal-content { background:white; padding:25px; border-radius:18px; width:85%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+        
+        .btn-action { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: 600; margin-top: 8px; cursor: pointer; display: block; text-decoration: none; text-align: center; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="app-header">
     <h1 style="margin:0; font-size:18px; color:var(--phetpaya-green)">Phetpaya Garden Journal</h1>
-    <div id="welcome" style="font-size:12px; color:#777">สวัสดีครับ...</div>
+    <div id="welcome" style="font-size:11px; color:#777">สวัสดีผู้ดูแลสวน...</div>
 </div>
 
 <div class="container">
-    <button class="action-btn" style="background: var(--phetpaya-green); color: white; margin-bottom: 20px;" onclick="document.getElementById('add-modal').style.display='flex'">+ เพิ่มพืชใหม่ในสวน</button>
-    <div id="plantList"></div>
+    
+    <div id="page-home" class="page-content active">
+        <div class="weather-card">
+            <div style="font-size:12px; opacity:0.8;">📍 วิเคราะห์รายพื้นที่: <span id="loc-text">สมุทรปราการ</span></div>
+            <div class="weather-main">
+                <div style="font-size:22px; font-weight:600;">31°C | ความชื้น 72%</div>
+                <div style="font-size:30px;">🌤️</div>
+            </div>
+            <div id="seasonal-alert" style="margin-top:10px; font-size:13px; border-top:1px solid rgba(255,255,255,0.2); padding-top:8px;">
+                ⚠️ คำแนะนำ: อากาศแห้งระวังเพลี้ยไฟในใบอ่อน
+            </div>
+        </div>
+        <button class="btn-action" style="background: var(--phetpaya-green); color: white; margin-bottom: 20px;" onclick="document.getElementById('add-modal').style.display='flex'">+ ลงทะเบียนพืชใหม่</button>
+        <div id="plantList"></div>
+    </div>
+
+    <div id="page-forecast" class="page-content">
+        <h3 style="margin-top:0;">🌦️ พยากรณ์ความเสี่ยงรายฤดูกาล</h3>
+        <div class="card" style="border-left: 5px solid var(--status-danger);">
+            <strong>🌡️ ช่วงเปลี่ยนผ่านฤดู (มีนาคม - เมษายน)</strong>
+            <p style="font-size:13px; color:#666;">ระวังการระบาดของเพลี้ยจักจั่นและไรแดง เนื่องจากอากาศร้อนจัดพืชขาดน้ำ</p>
+            <div style="background:#fff3e0; padding:10px; border-radius:8px; font-size:12px; margin-top:10px;">
+                <strong>วิธีป้องกัน:</strong> พ่นน้ำสร้างความชื้นช่วงเช้ามืด และใช้ผลิตภัณฑ์กลุ่มควบคุมไข่แมลง
+            </div>
+        </div>
+        <div class="card" style="border-left: 5px solid #2196F3;">
+            <strong>🚨 เตรียมรับมือฤดูฝน (พฤษภาคม)</strong>
+            <p style="font-size:13px; color:#666;">ตรวจเช็กการระบายน้ำรอบโคนต้น เพื่อป้องกันโรครากเน่าโคนเน่า</p>
+        </div>
+    </div>
+
+    <div id="page-report" class="page-content">
+        <h3 style="margin-top:0;">📑 รายงานสรุปสวนของคุณ</h3>
+        <div class="card">
+            <div style="color:#777; font-size:13px;">จำนวนพืชทั้งหมด</div>
+            <div id="total-plants" style="font-size:28px; font-weight:600; color:var(--phetpaya-green);">0 ต้น</div>
+        </div>
+        <div id="report-details">
+            <p style="text-align:center; color:#999; font-size:13px;">ยังไม่มีประวัติการบันทึกปัญหา</p>
+        </div>
+    </div>
+
+</div>
+
+<div class="nav-bar">
+    <div class="nav-item active" onclick="switchTab('home', this)">
+        <span class="nav-icon">🌳</span> สวนของฉัน
+    </div>
+    <div class="nav-item" onclick="switchTab('forecast', this)">
+        <span class="nav-icon">🌦️</span> พยากรณ์โรค
+    </div>
+    <div class="nav-item" onclick="switchTab('report', this)">
+        <span class="nav-icon">📑</span> รายงาน
+    </div>
 </div>
 
 <div id="issue-modal" class="modal">
     <div class="modal-content">
-        <h3 id="target-plant-name" style="margin-top:0; color:var(--phetpaya-green);">ต้นไม้ของคุณ</h3>
-        <label style="font-size:13px; font-weight:600;">เลือกปัญหาที่พบ:</label>
-        <select id="issue-select" style="width:100%; padding:12px; margin-top:8px; border-radius:10px;" onchange="getExpertAdvice()">
-            <option value="">-- เลือกอาการ --</option>
-            <option value="pest">พบเพลี้ยไฟ / ไรแดง</option>
+        <h3 id="target-plant-name" style="margin-top:0; color:var(--phetpaya-green);"></h3>
+        <select id="issue-select" style="width:100%; padding:12px; border-radius:10px;" onchange="showExpertSolution()">
+            <option value="">-- พบปัญหาอะไร? --</option>
+            <option value="pest">พบเพลี้ย / ไรแดง</option>
             <option value="fungi">พบเชื้อรา / รากเน่า</option>
-            <option value="yellow">ใบเหลือง / ขาดสารอาหาร</option>
+            <option value="yellow">ใบเหลือง / พืชโทรม</option>
         </select>
 
-        <div id="advice-panel" class="advice-panel">
-            <div style="font-weight:600; font-size:14px; margin-bottom:5px;">💡 คำแนะนำเบื้องต้น:</div>
-            <div id="advice-text" style="font-size:12.5px; line-height:1.5; color:#444;"></div>
+        <div id="solution-box" style="display:none; margin-top:15px; background:#e8f5e9; padding:15px; border-radius:12px; border-left:5px solid var(--phetpaya-green);">
+            <div style="font-weight:600; font-size:13px; margin-bottom:5px;">💡 คำแนะนำเบื้องต้น:</div>
+            <div id="solution-text" style="font-size:12.5px; line-height:1.5;"></div>
+            <div style="margin-top:15px; border-top:1px solid #c8e6c9; padding-top:10px;">
+                <div id="product-name" style="font-weight:600; font-size:13px; color:var(--phetpaya-green);"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px;">
+                    <a id="buy-btn" href="#" class="btn-action" style="background:var(--line-shop); color:white; margin:0; font-size:12px;">🛒 ซื้อเลย</a>
+                    <a id="chat-btn" href="#" class="btn-action" style="background:var(--line-chat); color:white; margin:0; font-size:12px;">💬 ปรึกษา</a>
+                </div>
+            </div>
         </div>
-
-        <div id="shop-area" class="shop-area">
-            <div style="font-weight:600; font-size:13px; margin-bottom:10px;">📦 สินค้าแนะนำสำหรับการรักษา:</div>
-            <div id="product-info" style="font-size:13px; margin-bottom:10px; background:#f9f9f9; padding:10px; border-radius:8px;"></div>
-            <a id="buy-link" href="#" class="action-btn" style="background:var(--line-shop); color:white;">🛒 สั่งซื้อสินค้าทาง LINE Shop</a>
-            <a id="chat-link" href="#" class="action-btn" style="background:var(--line-chat); color:white;">💬 ปรึกษาแอดมินเพิ่มเติม</a>
-        </div>
-
-        <button class="action-btn" style="background:#eee; color:#666; margin-top:15px;" onclick="saveIssueLog()">บันทึกประวัติการดูแล</button>
-        <button style="width:100%; background:none; border:none; color:#999; margin-top:10px;" onclick="closeModal()">ปิดหน้าต่าง</button>
+        <button class="btn-action" style="background:#eee; color:#666; margin-top:15px;" onclick="saveIssueLog()">บันทึกข้อมูลวันนี้</button>
+        <button style="width:100%; background:none; border:none; color:#999; margin-top:10px;" onclick="closeModal('issue-modal')">ยกเลิก</button>
     </div>
 </div>
 
 <div id="add-modal" class="modal">
     <div class="modal-content">
         <h3>ลงทะเบียนพืช</h3>
-        <input type="text" id="p-name" style="width:100%; padding:12px; margin-bottom:10px; box-sizing:border-box;" placeholder="ชื่อต้นไม้">
-        <button class="action-btn" style="background:var(--phetpaya-green); color:white;" onclick="addPlant()">บันทึก</button>
-        <button style="width:100%; background:none; border:none; margin-top:10px; color:#999;" onclick="document.getElementById('add-modal').style.display='none'">ยกเลิก</button>
+        <input type="text" id="p-name" style="width:100%; padding:12px; margin-bottom:10px; box-sizing:border-box;" placeholder="ชื่อเรียกต้นไม้">
+        <button class="btn-action" style="background:var(--phetpaya-green); color:white;" onclick="addPlant()">ลงทะเบียน</button>
+        <button style="width:100%; background:none; border:none; margin-top:10px; color:#999;" onclick="closeModal('add-modal')">ยกเลิก</button>
     </div>
 </div>
 
-<div class="nav-bar">
-    <div class="nav-item active">🌳 สวนของฉัน</div>
-    <div class="nav-item">🌦️ พยากรณ์โรค</div>
-    <div class="nav-item">📑 รายงาน</div>
-</div>
-
 <script>
-    let plants = JSON.parse(localStorage.getItem('phetpaya_final_db') || "[]");
+    let plants = JSON.parse(localStorage.getItem('phetpaya_pro_v2') || "[]");
     let currentPlantId = null;
 
     const database = {
-        pest: {
-            advice: "1. ฉีดล้างใบด้วยน้ำเปล่า\n2. ลดปุ๋ยที่มีไนโตรเจนสูง\n3. ใช้สารสกัดสะเดาหรือสารกำจัดแมลงกลุ่มที่ 4",
-            product: "Phetpaya PestKill (290.-)",
-            link: "https://shop.line.me/@phetpaya/product/1"
-        },
-        fungi: {
-            advice: "1. ตัดแต่งส่วนที่เป็นโรคออก\n2. งดรดน้ำช่วงเย็น\n3. ใช้ไตรโคเดอร์มาผสมน้ำราดโคนต้น",
-            product: "ชุดกำจัดเชื้อราเพชรพญา (350.-)",
-            link: "https://shop.line.me/@phetpaya/product/2"
-        },
-        yellow: {
-            advice: "1. ตรวจสอบความร่วนซุยของดิน\n2. เสริมธาตุอาหารรองทางใบ\n3. ปรับค่า pH ดินให้อยู่ที่ 5.5-6.5",
-            product: "Phetpaya Plus ธาตุอาหารรวม (320.-)",
-            link: "https://shop.line.me/@phetpaya/product/3"
-        }
+        pest: { advice: "ฉีดพ่นน้ำไล่แมลงช่วงเช้ามืด, ใช้สารกลุ่มสะเดา หรือสารกำจัดแมลงกลุ่มที่ 4", product: "เพชรพญา PestKill", link: "https://shop.line.me/@phetpaya/1" },
+        fungi: { advice: "งดน้ำช่วงเย็น, ตัดแต่งกิ่งที่แห้ง, ใช้ไตรโคเดอร์มาผสมน้ำราดโคน", product: "ชุดแก้รากเน่าเพชรพญา", link: "https://shop.line.me/@phetpaya/2" },
+        yellow: { advice: "ตรวจสอบความชื้นดิน, เสริมธาตุอาหารรองและจุลธาตุทางใบ", product: "Phetpaya Plus", link: "https://shop.line.me/@phetpaya/3" }
     };
 
     async function init() {
@@ -122,86 +156,96 @@
             } else { liff.login(); }
         } catch (e) {}
         render();
+        updateReport();
     }
 
-    function render() {
-        const list = document.getElementById('plantList');
-        list.innerHTML = plants.map(p => `
-            <div class="plant-card">
-                <div style="font-weight:600; color:var(--phetpaya-green); font-size:16px;">${p.name}</div>
-                <div style="font-size:12px; color:#888; margin-top:4px;">
-                    รดน้ำล่าสุด: ${p.lastWater} | ใส่ปุ๋ยล่าสุด: ${p.lastFert}
-                </div>
-                ${p.lastIssue ? `<div class="history-tag">⚠️ พบล่าสุด: ${p.lastIssue}</div>` : ''}
-                
-                <div class="log-btn-group">
-                    <div class="log-btn" onclick="quickLog(${p.id}, 'water')">💧<br>รดน้ำ</div>
-                    <div class="log-btn" onclick="quickLog(${p.id}, 'fert')">🧪<br>ใส่ปุ๋ย</div>
-                    <div class="log-btn" style="color:var(--status-danger)" onclick="openIssueModal(${p.id}, '${p.name}')">🚨<br>แจ้งปัญหา</div>
-                </div>
-            </div>
-        `).join('');
+    function switchTab(pageId, el) {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        el.classList.add('active');
     }
 
     function addPlant() {
         const name = document.getElementById('p-name').value;
         if(!name) return;
-        plants.push({ id: Date.now(), name: name, lastWater: '-', lastFert: '-', lastIssue: '' });
-        localStorage.setItem('phetpaya_final_db', JSON.stringify(plants));
-        document.getElementById('add-modal').style.display='none';
+        plants.push({ id: Date.now(), name: name, lastWater: '-', lastFert: '-', issues: [] });
+        localStorage.setItem('phetpaya_pro_v2', JSON.stringify(plants));
+        closeModal('add-modal');
         render();
+        updateReport();
+    }
+
+    function render() {
+        const list = document.getElementById('plantList');
+        if(!plants.length) { list.innerHTML = "<p style='text-align:center; color:#999;'>ยังไม่มีข้อมูลพืช</p>"; return; }
+        list.innerHTML = plants.map(p => `
+            <div class="card">
+                <div style="font-weight:600; color:var(--phetpaya-green);">${p.name}</div>
+                <div style="font-size:12px; color:#888; margin-top:4px;">💧: ${p.lastWater} | 🧪: ${p.lastFert}</div>
+                ${p.issues.length ? `<div style="font-size:10px; color:var(--status-danger); margin-top:5px; font-weight:600;">⚠️ ล่าสุด: ${p.issues[0].title}</div>` : ''}
+                <div class="log-btn-group">
+                    <div class="log-btn" onclick="quickLog(${p.id}, 'water')">💧 รดน้ำ</div>
+                    <div class="log-btn" onclick="quickLog(${p.id}, 'fert')">🧪 ใส่ปุ๋ย</div>
+                    <div class="log-btn" style="color:var(--status-danger)" onclick="openIssue(${p.id}, '${p.name}')">🚨 ปัญหา</div>
+                </div>
+            </div>
+        `).join('');
     }
 
     function quickLog(id, type) {
         const now = new Date().toLocaleDateString('th-TH');
         plants = plants.map(p => {
-            if(p.id === id) {
-                if(type === 'water') p.lastWater = now;
-                else p.lastFert = now;
-            }
+            if(p.id === id) { if(type === 'water') p.lastWater = now; else p.lastFert = now; }
             return p;
         });
-        localStorage.setItem('phetpaya_final_db', JSON.stringify(plants));
+        localStorage.setItem('phetpaya_pro_v2', JSON.stringify(plants));
         render();
     }
 
-    function openIssueModal(id, name) {
+    function openIssue(id, name) {
         currentPlantId = id;
         document.getElementById('target-plant-name').innerText = "แจ้งปัญหา: " + name;
         document.getElementById('issue-select').value = "";
-        document.getElementById('advice-panel').style.display = "none";
-        document.getElementById('shop-area').style.display = "none";
+        document.getElementById('solution-box').style.display = "none";
         document.getElementById('issue-modal').style.display = "flex";
     }
 
-    function getExpertAdvice() {
-        const type = document.getElementById('issue-select').value;
-        if(!type) return;
-        const data = database[type];
-        document.getElementById('advice-text').innerText = data.advice;
-        document.getElementById('product-info').innerText = "แนะนำ: " + data.product;
-        document.getElementById('buy-link').href = data.link;
-        document.getElementById('chat-link').href = `https://line.me/R/oaMessage/@phetpaya/?สอบถามเรื่อง${type}`;
-        
-        document.getElementById('advice-panel').style.display = "block";
-        document.getElementById('shop-area').style.display = "block";
+    function showExpertSolution() {
+        const val = document.getElementById('issue-select').value;
+        if(!val) return;
+        const data = database[val];
+        document.getElementById('solution-text').innerText = data.advice;
+        document.getElementById('product-name').innerText = "แนะนำ: " + data.product;
+        document.getElementById('buy-btn').href = data.link;
+        document.getElementById('chat-btn').href = `https://line.me/R/oaMessage/@phetpaya/?สอบถามเรื่อง${val}`;
+        document.getElementById('solution-box').style.display = "block";
     }
 
     function saveIssueLog() {
         const select = document.getElementById('issue-select');
-        const issueName = select.options[select.selectedIndex].text;
-        if(!select.value) return alert("กรุณาเลือกอาการก่อนบันทึกครับ");
-        
+        if(!select.value) return;
+        const now = new Date().toLocaleDateString('th-TH');
         plants = plants.map(p => {
-            if(p.id === currentPlantId) p.lastIssue = issueName + " (" + new Date().toLocaleDateString('th-TH') + ")";
+            if(p.id === currentPlantId) p.issues.unshift({ title: select.options[select.selectedIndex].text, date: now });
             return p;
         });
-        localStorage.setItem('phetpaya_final_db', JSON.stringify(plants));
-        closeModal();
+        localStorage.setItem('phetpaya_pro_v2', JSON.stringify(plants));
+        closeModal('issue-modal');
         render();
+        updateReport();
     }
 
-    function closeModal() { document.getElementById('issue-modal').style.display = "none"; }
+    function updateReport() {
+        document.getElementById('total-plants').innerText = plants.length + " ต้น";
+        const details = document.getElementById('report-details');
+        const allIssues = plants.flatMap(p => p.issues.map(i => `${p.name}: ${i.title} (${i.date})`));
+        if(allIssues.length) {
+            details.innerHTML = "<strong>ประวัติปัญหาที่พบ:</strong><ul style='font-size:13px; color:#666;'>" + allIssues.map(i => `<li>${i}</li>`).join('') + "</ul>";
+        }
+    }
+
+    function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
     init();
 </script>
