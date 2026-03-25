@@ -226,6 +226,36 @@
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     init();
+
+    <div class="lens-box">
+    <div style="font-size: 12px; color: var(--google); font-weight: 600;">🔍 ค้นหาสายพันธุ์ด้วยภาพ?</div>
+    
+    <button class="btn-lens" onclick="openGoogleLens()" style="border:none; width:100%;">
+        📷 เปิด Google Lens
+    </button>
+    
+    <div style="font-size: 10px; color: #777; margin-top: 8px;">
+        *หากแอปไม่เปิดอัตโนมัติ ให้เลือก 'เปิดด้วยแอป Google'
+    </div>
+</div>
+
+<script>
+    function openGoogleLens() {
+        // พยายามเปิดแอปโดยตรงก่อน
+        const lensUrl = "googleapp://lens";
+        const fallbackUrl = "https://www.google.com/searchbyimage?sbisrc=4se";
+        
+        // สร้างทริกเกอร์เปิดแอป
+        window.location.href = lensUrl;
+        
+        // ถ้าผ่านไป 1 วินาทีแล้วไม่มีอะไรเกิดขึ้น (เครื่องไม่มีแอปหรือโดนบล็อก) ให้เปิดหน้าเว็บแทน
+        setTimeout(function() {
+            if (document.hasFocus()) {
+                window.open(fallbackUrl, '_blank');
+            }
+        }, 1000);
+    }
+</script>
 </script>
 </body>
 </html>
