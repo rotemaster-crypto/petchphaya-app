@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เพชรพญา - สมุดบันทึกและคำนวณปุ๋ย</title>
+    <title>เพชรพญา - ระบบแจ้งเตือนและคำนวณปุ๋ย</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         :root { --primary: #2e7d32; --secondary: #1976d2; --bg: #f4f9f4; }
@@ -12,7 +12,7 @@
         .header { text-align: center; margin-bottom: 20px; }
         h2 { color: var(--primary); margin: 0; }
         .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #444; }
         input, select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         .btn { width: 100%; color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .btn-calc { background-color: var(--primary); }
@@ -21,6 +21,7 @@
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
         .nav-item { flex: 1; text-align: center; cursor: pointer; color: #666; font-size: 14px; }
         .nav-item.active { color: var(--primary); font-weight: bold; }
+        .next-alert { font-size: 12px; color: #d32f2f; font-weight: bold; display: block; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -51,22 +52,32 @@
 
 <div id="logPage" class="card" style="display:none;">
     <div class="header">
-        <h2 style="color:var(--secondary)">สมุดบันทึกเพชรพญา</h2>
+        <h2 style="color:var(--secondary)">สมุดบันทึก & แจ้งเตือน</h2>
     </div>
     <div class="input-group">
-        <label>วันที่ใส่ปุ๋ย</label>
+        <label>วันที่ใส่ปุ๋ยล่าสุด</label>
         <input type="date" id="logDate">
     </div>
-    <button class="btn btn-log" onclick="saveLog()">บันทึกข้อมูลวันนี้</button>
-    <div id="logHistory" style="margin-top:20px;">
-        <strong>ประวัติการดูแล:</strong>
-        <ul id="logList" style="padding-left: 20px; font-size: 14px; color: #444; margin-top: 10px;"></ul>
+    <div class="input-group">
+        <label>ให้แจ้งเตือนรอบถัดไปในอีก (วัน)</label>
+        <select id="alertInterval">
+            <option value="7">7 วัน (ทุกสัปดาห์)</option>
+            <option value="15">15 วัน (ปักษ์)</option>
+            <option value="30">30 วัน (ทุกเดือน)</option>
+            <option value="45">45 วัน</option>
+        </select>
+    </div>
+    <button class="btn btn-log" onclick="saveLog()">บันทึกและตั้งวันแจ้งเตือน</button>
+    
+    <div id="logHistory" style="margin-top:25px;">
+        <strong>ตารางการดูแลของคุณ:</strong>
+        <div id="logList" style="margin-top: 10px;"></div>
     </div>
 </div>
 
 <div class="nav-bar">
     <div class="nav-item active" id="nav-calc" onclick="showPage('calc')">🧮 คำนวณ</div>
-    <div class="nav-item" id="nav-log" onclick="showPage('log')">📖 สมุดบันทึก</div>
+    <div class="nav-item" id="nav-log" onclick="showPage('log')">🔔 แจ้งเตือน</div>
 </div>
 
 <script>
@@ -105,20 +116,46 @@
     }
 
     function saveLog() {
-        const date = document.getElementById('logDate').value;
+        const dateInput = document.getElementById('logDate').value;
+        const interval = document.getElementById('alertInterval').value;
         const plant = document.getElementById('plant').value;
-        if(!date) return alert("กรุณาเลือกวันที่");
+        
+        if(!dateInput) return alert("กรุณาเลือกวันที่");
+
+        // คำนวณวันแจ้งเตือนถัดไป
+        const startDate = new Date(dateInput);
+        const nextDate = new Date(dateInput);
+        nextDate.setDate(startDate.getDate() + parseInt(interval));
+        const nextDateStr = nextDate.toISOString().split('T')[0];
+
         let logs = JSON.parse(localStorage.getItem('phetpaya_logs') || "[]");
-        logs.unshift({ date: date, plant: plant });
+        logs.unshift({ 
+            date: dateInput, 
+            next: nextDateStr, 
+            plant: plant,
+            interval: interval 
+        });
+        
         localStorage.setItem('phetpaya_logs', JSON.stringify(logs));
-        alert("บันทึกข้อมูลเรียบร้อย!");
+        alert("บันทึกสำเร็จ! รอบถัดไปคือวันที่ " + nextDateStr);
         displayLogs();
     }
 
     function displayLogs() {
         const logs = JSON.parse(localStorage.getItem('phetpaya_logs') || "[]");
         const list = document.getElementById('logList');
-        list.innerHTML = logs.length ? logs.map(l => `<li>${l.date}: ใส่ปุ๋ยสำหรับ${l.plant}</li>`).join('') : "ยังไม่มีประวัติ";
+        if (!logs.length) {
+            list.innerHTML = "<p style='color:#999; font-size:14px;'>ยังไม่มีประวัติการบันทึก</p>";
+            return;
+        }
+        
+        list.innerHTML = logs.map(l => `
+            <div style="background:#fff; border:1px solid #eee; padding:12px; border-radius:10px; margin-bottom:10px; font-size:14px;">
+                <strong>🌿 บำรุง${l.plant}</strong><br>
+                <span style="color:#666;">วันที่ใส่: ${l.date}</span><br>
+                <span class="next-alert">🔔 รอบถัดไป: ${l.next} (ทุก ${l.interval} วัน)</span>
+            </div>
+        `).join('');
     }
 
     init();
