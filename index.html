@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phetpaya Garden - Smart Pro V16</title>
+    <title>Phetpaya Garden - Smart Pro V17</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -41,9 +41,13 @@
         .modal-content { background:white; padding:25px; border-radius:25px; width:100%; max-width: 380px; box-sizing: border-box; }
         .input-box { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-top: 10px; box-sizing: border-box; font-size: 14px; }
         
-        .visual-search-box { background: #f0f7ff; border: 2px dashed var(--google); padding: 20px; border-radius: 18px; text-align: center; margin-bottom: 15px; }
-        
+        /* Diagnosis UI */
+        .diag-box { background: white; border-radius: 22px; padding: 24px; border: 2px dashed var(--google); text-align: center; margin-bottom: 16px; }
+        .diag-result-btn { display: none; background: var(--google); color: white; padding: 12px; border-radius: 14px; text-decoration: none; font-weight: 600; margin-top: 15px; font-size: 14px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
         #lux-preview, #c-buffer { display: none; }
+        .report-item { background: white; border-radius: 18px; padding: 15px; margin-bottom: 12px; border: 1px solid #eee; }
         .shop-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-shop); color: white; padding: 8px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; margin-right: 5px; }
         .oa-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-oa); color: white; padding: 8px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; }
     </style>
@@ -86,20 +90,22 @@
             <canvas id="c-buffer"></canvas>
         </div>
 
-        <div class="plant-card" style="text-align:center; border: 2px dashed var(--google);">
-            <div style="font-weight:600; color:var(--google);">Diagnosis (วินิจฉัยโรคด้วยภาพ)</div>
-            <p style="font-size:12px; color:#666; margin-bottom:15px;">ถ่ายภาพหรือเลือกจากเครื่องเพื่อวินิจฉัยทันที</p>
+        <div class="diag-box">
+            <div style="font-weight:600; color:var(--google); font-size:16px;">Diagnosis (วินิจฉัยโรคด้วยภาพ)</div>
+            <p style="font-size:12px; color:#666; margin: 10px 0 15px 0;">ถ่ายภาพหรือเลือกจากเครื่องเพื่อวินิจฉัยทันที</p>
             
-            <form id="visual-search-form" action="https://www.google.com/searchbyimage/upload" method="POST" enctype="multipart/form-data" target="_blank">
+            <form id="v-search-form" action="https://www.google.com/searchbyimage/upload" method="POST" enctype="multipart/form-data" target="_blank">
                 <input type="hidden" name="sbisrc" value="cr_1_3_2">
-                <input type="file" id="visual-search-input" name="encoded_image" accept="image/*" capture="environment" style="display:none;" onchange="document.getElementById('visual-search-form').submit();">
-                <button type="button" class="btn-main" style="background:var(--google);" onclick="document.getElementById('visual-search-input').click()">📷 ถ่ายรูปหรือเลือกภาพวินิจฉัย</button>
+                <input type="file" id="v-search-input" name="encoded_image" accept="image/*" capture="environment" style="display:none;" onchange="showDiagLink()">
+                <button type="button" class="btn-main" style="background:var(--google);" onclick="document.getElementById('v-search-input').click()">📷 ถ่ายรูปหรือเลือกภาพวินิจฉัย</button>
             </form>
+
+            <a href="javascript:void(0)" id="diag-result-link" class="diag-result-btn" onclick="document.getElementById('v-search-form').submit()">🔍 ดูผลการวินิจฉัยพืชของคุณ</a>
         </div>
     </div>
 
     <div id="page-report" class="page-content">
-        <h3>📑 รายงานการดูแลย้อนหลัง</h3>
+        <h3 style="display:flex; align-items:center; gap:8px;">📑 รายงานการดูแลย้อนหลัง <span id="report-count" style="font-size:12px; background:#eee; padding:2px 8px; border-radius:10px;">0</span></h3>
         <div id="master-log"></div>
     </div>
 </div>
@@ -113,20 +119,12 @@
 <div id="add-modal" class="modal">
     <div class="modal-content">
         <h3 style="margin:0; font-size:18px; color:var(--phetpaya);">🌿 ลงทะเบียนพืชใหม่</h3>
-        
-        <div class="visual-search-box">
-            <div style="font-size:12px; color:var(--google); font-weight:600; margin-bottom:10px;">🔍 ไม่แน่ใจสายพันธุ์?</div>
-            <form id="add-search-form" action="https://www.google.com/searchbyimage/upload" method="POST" enctype="multipart/form-data" target="_blank">
-                <input type="hidden" name="sbisrc" value="cr_1_3_2">
-                <input type="file" id="add-search-input" name="encoded_image" accept="image/*" capture="environment" style="display:none;" onchange="document.getElementById('add-search-form').submit();">
-                <button type="button" style="background:var(--google); color:white; border:none; padding:10px 20px; border-radius:12px; font-weight:600; cursor:pointer;" onclick="document.getElementById('add-search-input').click()">📷 ถ่ายรูปค้นหาสายพันธุ์</button>
-            </form>
-        </div>
+        <p style="font-size:12px; color:#666; margin: 10px 0;">ระบุชื่อพืชและแนบรูปภาพเพื่อเริ่มบันทึกการดูแล</p>
 
         <input type="text" id="p-name" class="input-box" placeholder="ระบุชื่อต้นไม้ (เช่น ทุเรียนหมอนทอง)">
         <input type="file" id="p-img" class="input-box" accept="image/*" capture="environment">
         
-        <button class="btn-main" style="margin-top:20px;" onclick="savePlantV16()">บันทึกข้อมูลเข้าสวน</button>
+        <button class="btn-main" style="margin-top:20px;" onclick="savePlantV17()">บันทึกข้อมูลเข้าสวน</button>
         <button style="width:100%; border:none; background:none; margin-top:15px; color:#999;" onclick="closeModal('add-modal')">ยกเลิก</button>
     </div>
 </div>
@@ -142,12 +140,12 @@
 </div>
 
 <script>
-    let plants = JSON.parse(localStorage.getItem('phetpaya_v16_db') || "[]");
+    let plants = JSON.parse(localStorage.getItem('phetpaya_v17_db') || "[]");
     let activeId = null, activeType = '', curTemp = 31, curHum = 60;
 
     async function init() {
         try {
-            await liff.init({ liffId: "2009595288-7Tm3her" }); // แก้ LIFF ID ให้ตรงของคุณ
+            await liff.init({ liffId: "2009595288-7Tm3Mher" });
             if (liff.isLoggedIn()) {
                 const profile = await liff.getProfile();
                 document.getElementById('user-display').innerText = "ผู้ดูแล: " + profile.displayName;
@@ -155,6 +153,12 @@
         } catch (e) {}
         updateWeatherAnalysis();
         renderUI();
+    }
+
+    // ระบบวินิจฉัย: เมื่อเลือกรูปแล้วให้โชว์ปุ่มดูผล
+    function showDiagLink() {
+        const btn = document.getElementById('diag-result-link');
+        btn.style.display = 'block';
     }
 
     function updateWeatherAnalysis() {
@@ -213,6 +217,7 @@
         }).join('');
 
         const allLogs = plants.flatMap(p => p.logs.map(l => ({ name: p.name, ...l })));
+        document.getElementById('report-count').innerText = allLogs.length;
         report.innerHTML = allLogs.sort((a,b) => b.time - a.time).map(l => {
             let shop = "";
             const n = l.note.toLowerCase();
@@ -248,11 +253,11 @@
             }
             return p;
         });
-        localStorage.setItem('phetpaya_v16_db', JSON.stringify(plants));
+        localStorage.setItem('phetpaya_v17_db', JSON.stringify(plants));
         closeModal('care-modal'); renderUI(); alert("บันทึกสำเร็จ!");
     }
 
-    function savePlantV16() {
+    function savePlantV17() {
         const name = document.getElementById('p-name').value;
         const file = document.getElementById('p-img').files[0];
         if(!name || !file) return alert("กรุณาระบุชื่อและใส่รูปต้นไม้");
@@ -264,7 +269,7 @@
                 canvas.width = 400; canvas.height = (img.height/img.width)*400;
                 canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                 plants.push({ id: Date.now(), name: name, img: canvas.toDataURL('image/jpeg', 0.6), lastW: Date.now()-86400000, lastF: Date.now()-86400000, logs: [] });
-                localStorage.setItem('phetpaya_v16_db', JSON.stringify(plants));
+                localStorage.setItem('phetpaya_v17_db', JSON.stringify(plants));
                 closeModal('add-modal'); renderUI();
             };
             img.src = e.target.result;
