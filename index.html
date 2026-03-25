@@ -3,132 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phetpaya Garden - AI Care & Shop</title>
+    <title>Phetpaya Garden - Professional Journal</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --phetpaya-green: #1B5E20; --light-bg: #F5F7F5; --status-danger: #E53935; --line-shopping: #00b900; --line-chat: #06C755; }
-        body { font-family: 'Kanit', sans-serif; background-color: var(--light-bg); margin: 0; padding-bottom: 100px; }
+        :root { --phetpaya-green: #1B5E20; --light-bg: #F5F7F5; --status-danger: #E53935; --line-chat: #06C755; --line-shop: #00b900; }
+        body { font-family: 'Kanit', sans-serif; background-color: var(--light-bg); margin: 0; padding-bottom: 100px; color: #333; }
         .container { padding: 15px; max-width: 500px; margin: auto; }
-        .card { background: white; border-radius: 18px; padding: 22px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .app-header { background: #fff; padding: 15px 20px; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 50; }
         
-        /* Recommendation Box */
-        .advice-container { background: #E8F5E9; border-radius: 12px; padding: 15px; margin-top: 15px; border-left: 5px solid var(--phetpaya-green); }
-        .advice-header { font-weight: 600; color: var(--phetpaya-green); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .advice-detail { font-size: 13.5px; color: #444; line-height: 1.5; }
+        /* Plant Card */
+        .plant-card { background: white; border-radius: 18px; padding: 18px; margin-bottom: 15px; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .log-btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 15px; }
+        .log-btn { padding: 10px 5px; border-radius: 10px; border: 1px solid #eee; background: #f9f9f9; font-size: 11px; cursor: pointer; text-align: center; }
+        .log-btn:active { background: #e0e0e0; }
 
-        /* Product & Chat Buttons */
-        .product-item { background: #fff; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; margin-top: 10px; border: 1px solid #eee; }
-        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .btn-buy { background: var(--line-shopping); color: white; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }
-        .btn-chat { background: var(--line-chat); color: white; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        /* History & Advice */
+        .history-tag { display: inline-block; font-size: 10px; background: #FEEBEE; color: var(--status-danger); padding: 2px 8px; border-radius: 10px; margin-top: 5px; }
+        .advice-panel { background: #E8F5E9; border-radius: 12px; padding: 15px; margin-top: 15px; border-left: 5px solid var(--phetpaya-green); display: none; }
+        
+        /* Product & Chat */
+        .shop-area { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
+        .action-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: 600; margin-top: 8px; cursor: pointer; display: block; text-decoration: none; text-align: center; font-size: 14px; }
 
-        .select-std { width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #e0e0e0; font-size: 15px; margin-bottom: 15px; background: #fff; }
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 12px 0; z-index: 100; }
+        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #999; }
+        .nav-item.active { color: var(--phetpaya-green); font-weight: 600; }
+        
+        /* Modal */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:200; align-items:center; justify-content:center; }
+        .modal-content { background:white; padding:25px; border-radius:18px; width:85%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2 style="color:var(--phetpaya-green); text-align:center;">📋 บันทึกสุขภาพพืช</h2>
-    
-    <div class="card">
-        <label style="font-weight:600; display:block; margin-bottom:10px; font-size: 16px;">🔍 ตรวจพบปัญหาอะไรในวันนี้?</label>
-        <select id="issue-select" class="select-std" onchange="processIssue()">
-            <option value="">-- เลือกปัญหาที่พบ --</option>
-            <option value="pest">พบเพลี้ยระบาด (เพลี้ยไฟ/ไรแดง)</option>
-            <option value="fungi">พบเชื้อรา (รากเน่า/ใบจุด/ราสีชมพู)</option>
-            <option value="yellow">ใบเหลือง/พืชโทรม (ขาดสารอาหาร)</option>
-            <option value="worm">พบหนอนเจาะลำต้น หรือหนอนกินใบ</option>
-        </select>
-        
-        <div id="solution-area" style="display:none;">
-            <div class="advice-container">
-                <div class="advice-header"><span>💡</span> คำแนะนำเบื้องต้นจากผู้เชี่ยวชาญ</div>
-                <div id="advice-text" class="advice-detail"></div>
-            </div>
+<div class="app-header">
+    <h1 style="margin:0; font-size:18px; color:var(--phetpaya-green)">Phetpaya Garden Journal</h1>
+    <div id="welcome" style="font-size:12px; color:#777">สวัสดีครับ...</div>
+</div>
 
-            <div style="margin-top:20px;">
-                <div style="font-weight:600; font-size:15px; margin-bottom:10px; color:var(--phetpaya-green);">📦 แนวทางการรักษาและสินค้าแนะนำ:</div>
-                <div id="product-list"></div>
-            </div>
+<div class="container">
+    <button class="action-btn" style="background: var(--phetpaya-green); color: white; margin-bottom: 20px;" onclick="document.getElementById('add-modal').style.display='flex'">+ เพิ่มพืชใหม่ในสวน</button>
+    <div id="plantList"></div>
+</div>
+
+<div id="issue-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="target-plant-name" style="margin-top:0; color:var(--phetpaya-green);">ต้นไม้ของคุณ</h3>
+        <label style="font-size:13px; font-weight:600;">เลือกปัญหาที่พบ:</label>
+        <select id="issue-select" style="width:100%; padding:12px; margin-top:8px; border-radius:10px;" onchange="getExpertAdvice()">
+            <option value="">-- เลือกอาการ --</option>
+            <option value="pest">พบเพลี้ยไฟ / ไรแดง</option>
+            <option value="fungi">พบเชื้อรา / รากเน่า</option>
+            <option value="yellow">ใบเหลือง / ขาดสารอาหาร</option>
+        </select>
+
+        <div id="advice-panel" class="advice-panel">
+            <div style="font-weight:600; font-size:14px; margin-bottom:5px;">💡 คำแนะนำเบื้องต้น:</div>
+            <div id="advice-text" style="font-size:12.5px; line-height:1.5; color:#444;"></div>
         </div>
 
-        <button onclick="saveLog()" style="width:100%; padding:15px; border-radius:12px; border:none; background:#eee; color:#666; font-weight:600; margin-top:20px; cursor:pointer;">บันทึกข้อมูลและกลับหน้าหลัก</button>
+        <div id="shop-area" class="shop-area">
+            <div style="font-weight:600; font-size:13px; margin-bottom:10px;">📦 สินค้าแนะนำสำหรับการรักษา:</div>
+            <div id="product-info" style="font-size:13px; margin-bottom:10px; background:#f9f9f9; padding:10px; border-radius:8px;"></div>
+            <a id="buy-link" href="#" class="action-btn" style="background:var(--line-shop); color:white;">🛒 สั่งซื้อสินค้าทาง LINE Shop</a>
+            <a id="chat-link" href="#" class="action-btn" style="background:var(--line-chat); color:white;">💬 ปรึกษาแอดมินเพิ่มเติม</a>
+        </div>
+
+        <button class="action-btn" style="background:#eee; color:#666; margin-top:15px;" onclick="saveIssueLog()">บันทึกประวัติการดูแล</button>
+        <button style="width:100%; background:none; border:none; color:#999; margin-top:10px;" onclick="closeModal()">ปิดหน้าต่าง</button>
     </div>
 </div>
 
+<div id="add-modal" class="modal">
+    <div class="modal-content">
+        <h3>ลงทะเบียนพืช</h3>
+        <input type="text" id="p-name" style="width:100%; padding:12px; margin-bottom:10px; box-sizing:border-box;" placeholder="ชื่อต้นไม้">
+        <button class="action-btn" style="background:var(--phetpaya-green); color:white;" onclick="addPlant()">บันทึก</button>
+        <button style="width:100%; background:none; border:none; margin-top:10px; color:#999;" onclick="document.getElementById('add-modal').style.display='none'">ยกเลิก</button>
+    </div>
+</div>
+
+<div class="nav-bar">
+    <div class="nav-item active">🌳 สวนของฉัน</div>
+    <div class="nav-item">🌦️ พยากรณ์โรค</div>
+    <div class="nav-item">📑 รายงาน</div>
+</div>
+
 <script>
-    // ฐานข้อมูลคำแนะนำและสินค้า
-    const expertDatabase = {
+    let plants = JSON.parse(localStorage.getItem('phetpaya_final_db') || "[]");
+    let currentPlantId = null;
+
+    const database = {
         pest: {
-            advice: "1. แยกต้นที่ติดเชื้อออก (ถ้าทำได้)\n2. ฉีดพ่นน้ำแรงๆ ใต้ใบเพื่อไล่ตัวอ่อน\n3. หลีกเลี่ยงการใช้ปุ๋ยไนโตรเจนสูงชั่วคราวเพราะจะดึงดูดแมลง\n4. ใช้สารกำจัดแมลงในช่วงเย็นที่แดดไม่จัด",
-            products: [
-                { name: "Phetpaya PestKill (สูตรน็อคเพลี้ย)", price: "290.-", link: "https://shop.line.me/@YOUR_ID/product/1" }
-            ]
+            advice: "1. ฉีดล้างใบด้วยน้ำเปล่า\n2. ลดปุ๋ยที่มีไนโตรเจนสูง\n3. ใช้สารสกัดสะเดาหรือสารกำจัดแมลงกลุ่มที่ 4",
+            product: "Phetpaya PestKill (290.-)",
+            link: "https://shop.line.me/@phetpaya/product/1"
         },
         fungi: {
-            advice: "1. งดการรดน้ำทางใบและลดความชื้นที่โคนต้น\n2. ตัดแต่งกิ่งที่แห้งตายหรือเป็นโรคออกไปเผาทำลาย\n3. ตรวจสอบระบบระบายน้ำอย่าให้มีน้ำขังโคน\n4. ใช้สารกลุ่มทองแดงหรือไตรโคเดอร์มาเพื่อยับยั้งเชื้อ",
-            products: [
-                { name: "ไตรโคเดอร์มาชนิดเข้มข้นพิเศษ", price: "195.-", link: "https://shop.line.me/@YOUR_ID/product/3" }
-            ]
+            advice: "1. ตัดแต่งส่วนที่เป็นโรคออก\n2. งดรดน้ำช่วงเย็น\n3. ใช้ไตรโคเดอร์มาผสมน้ำราดโคนต้น",
+            product: "ชุดกำจัดเชื้อราเพชรพญา (350.-)",
+            link: "https://shop.line.me/@phetpaya/product/2"
         },
         yellow: {
-            advice: "1. ตรวจสอบค่า pH ของดิน (พืชอาจดูดซึมธาตุอาหารไม่ได้)\n2. พรวนดินรอบทรงพุ่มเพื่อเพิ่มอากาศให้ราก\n3. เสริมธาตุอาหารรองและจุลธาตุทางใบเพื่อให้พืชฟื้นตัวทันที",
-            products: [
-                { name: "อาหารเสริมพืชทางใบ Phetpaya Plus", price: "350.-", link: "https://shop.line.me/@YOUR_ID/product/5" }
-            ]
-        },
-        worm: {
-            advice: "1. สำรวจหารูเจาะหรือมูลหนอนตามกิ่ง\n2. ใช้ลวดเขี่ยตัวหนอนออกหรือฉีดสารเข้าในรูเจาะ\n3. ใช้สารกำจัดแมลงกลุ่มที่ออกฤทธิ์สัมผัสและกินตาย",
-            products: [
-                { name: "ชุดพิฆาตหนอนเจาะลำต้น", price: "420.-", link: "https://shop.line.me/@YOUR_ID/product/6" }
-            ]
+            advice: "1. ตรวจสอบความร่วนซุยของดิน\n2. เสริมธาตุอาหารรองทางใบ\n3. ปรับค่า pH ดินให้อยู่ที่ 5.5-6.5",
+            product: "Phetpaya Plus ธาตุอาหารรวม (320.-)",
+            link: "https://shop.line.me/@phetpaya/product/3"
         }
     };
 
-    function processIssue() {
-        const issue = document.getElementById('issue-select').value;
-        const area = document.getElementById('solution-area');
-        const adviceBox = document.getElementById('advice-text');
-        const productBox = document.getElementById('product-list');
+    async function init() {
+        try {
+            await liff.init({ liffId: "2009595288-7Tm3Mher" });
+            if (liff.isLoggedIn()) {
+                const profile = await liff.getProfile();
+                document.getElementById("welcome").innerText = "ผู้ดูแล: คุณ " + profile.displayName;
+            } else { liff.login(); }
+        } catch (e) {}
+        render();
+    }
 
-        if (!issue) {
-            area.style.display = 'none';
-            return;
-        }
-
-        const data = expertDatabase[issue];
-        
-        // ใส่คำแนะนำ (ทำเป็นรายการบรรทัดใหม่)
-        adviceBox.innerText = data.advice;
-        
-        // ใส่สินค้าและปุ่มแชท
-        productBox.innerHTML = data.products.map(p => `
-            <div class="product-item">
-                <div style="font-size:30px;">📦</div>
-                <div style="flex:1;">
-                    <div style="font-weight:600; font-size:14px;">${p.name}</div>
-                    <div style="color:var(--status-danger); font-size:13px; font-weight:600;">ราคา ${p.price}</div>
+    function render() {
+        const list = document.getElementById('plantList');
+        list.innerHTML = plants.map(p => `
+            <div class="plant-card">
+                <div style="font-weight:600; color:var(--phetpaya-green); font-size:16px;">${p.name}</div>
+                <div style="font-size:12px; color:#888; margin-top:4px;">
+                    รดน้ำล่าสุด: ${p.lastWater} | ใส่ปุ๋ยล่าสุด: ${p.lastFert}
+                </div>
+                ${p.lastIssue ? `<div class="history-tag">⚠️ พบล่าสุด: ${p.lastIssue}</div>` : ''}
+                
+                <div class="log-btn-group">
+                    <div class="log-btn" onclick="quickLog(${p.id}, 'water')">💧<br>รดน้ำ</div>
+                    <div class="log-btn" onclick="quickLog(${p.id}, 'fert')">🧪<br>ใส่ปุ๋ย</div>
+                    <div class="log-btn" style="color:var(--status-danger)" onclick="openIssueModal(${p.id}, '${p.name}')">🚨<br>แจ้งปัญหา</div>
                 </div>
             </div>
-            <div class="action-buttons">
-                <a href="${p.link}" class="btn-buy">🛒 กดสั่งซื้อเอง</a>
-                <a href="https://line.me/R/oaMessage/@เพชรพญา/?สอบถามเรื่อง${issue}" class="btn-chat">💬 ปรึกษาแอดมิน</a>
-            </div>
         `).join('');
-
-        area.style.display = 'block';
     }
 
-    function saveLog() {
-        const issue = document.getElementById('issue-select').value;
-        if(issue) alert("บันทึกประวัติการตรวจพบเรียบร้อย ข้อมูลนี้จะถูกเก็บไว้ในรายงานของคุณ");
-        window.history.back(); // กลับหน้าหลัก
+    function addPlant() {
+        const name = document.getElementById('p-name').value;
+        if(!name) return;
+        plants.push({ id: Date.now(), name: name, lastWater: '-', lastFert: '-', lastIssue: '' });
+        localStorage.setItem('phetpaya_final_db', JSON.stringify(plants));
+        document.getElementById('add-modal').style.display='none';
+        render();
     }
 
-    async function init() {
-        try { await liff.init({ liffId: "2009595288-7Tm3Mher" }); } catch (e) {}
+    function quickLog(id, type) {
+        const now = new Date().toLocaleDateString('th-TH');
+        plants = plants.map(p => {
+            if(p.id === id) {
+                if(type === 'water') p.lastWater = now;
+                else p.lastFert = now;
+            }
+            return p;
+        });
+        localStorage.setItem('phetpaya_final_db', JSON.stringify(plants));
+        render();
     }
+
+    function openIssueModal(id, name) {
+        currentPlantId = id;
+        document.getElementById('target-plant-name').innerText = "แจ้งปัญหา: " + name;
+        document.getElementById('issue-select').value = "";
+        document.getElementById('advice-panel').style.display = "none";
+        document.getElementById('shop-area').style.display = "none";
+        document.getElementById('issue-modal').style.display = "flex";
+    }
+
+    function getExpertAdvice() {
+        const type = document.getElementById('issue-select').value;
+        if(!type) return;
+        const data = database[type];
+        document.getElementById('advice-text').innerText = data.advice;
+        document.getElementById('product-info').innerText = "แนะนำ: " + data.product;
+        document.getElementById('buy-link').href = data.link;
+        document.getElementById('chat-link').href = `https://line.me/R/oaMessage/@phetpaya/?สอบถามเรื่อง${type}`;
+        
+        document.getElementById('advice-panel').style.display = "block";
+        document.getElementById('shop-area').style.display = "block";
+    }
+
+    function saveIssueLog() {
+        const select = document.getElementById('issue-select');
+        const issueName = select.options[select.selectedIndex].text;
+        if(!select.value) return alert("กรุณาเลือกอาการก่อนบันทึกครับ");
+        
+        plants = plants.map(p => {
+            if(p.id === currentPlantId) p.lastIssue = issueName + " (" + new Date().toLocaleDateString('th-TH') + ")";
+            return p;
+        });
+        localStorage.setItem('phetpaya_final_db', JSON.stringify(plants));
+        closeModal();
+        render();
+    }
+
+    function closeModal() { document.getElementById('issue-modal').style.display = "none"; }
+
     init();
 </script>
 </body>
