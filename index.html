@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phetpaya Garden - Smart Pro V21</title>
+    <title>Phetpaya Garden - Smart Pro V22</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -14,7 +14,7 @@
         .page-content { display: none; }
         .page-content.active { display: block; }
 
-        /* Weather Analysis Card - Detail Version */
+        /* Weather Hero */
         .weather-hero { background: linear-gradient(135deg, #388E3C, var(--phetpaya)); color: white; border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 8px 15px rgba(45,90,39,0.15); }
         .weather-row { display: flex; justify-content: space-between; align-items: flex-start; }
         .loc-pin { font-size: 11px; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; margin-bottom: 8px; display: inline-block; }
@@ -118,7 +118,7 @@
         <input type="file" id="p-img" class="input-box" accept="image/*" capture="environment" onchange="mobileImageHandler(this)">
         <div id="upload-status" style="font-size: 11px; color: var(--phetpaya); margin-top: 5px; display: none;">⌛ กำลังประมวลผลไฟล์ภาพ...</div>
         
-        <button id="save-btn" class="btn-main" style="margin-top:20px; background: #BDC3C7;" onclick="savePlantV20()" disabled>รอสักครู่...</button>
+        <button id="save-btn" class="btn-main" style="margin-top:20px; background: #BDC3C7;" onclick="savePlantV22()" disabled>รอรูปภาพพร้อม...</button>
         <button style="width:100%; border:none; background:none; margin-top:15px; color:#999;" onclick="closeModal('add-modal')">ยกเลิก</button>
     </div>
 </div>
@@ -134,7 +134,7 @@
 </div>
 
 <script>
-    let plants = JSON.parse(localStorage.getItem('phetpaya_v21_db') || "[]");
+    let plants = JSON.parse(localStorage.getItem('phetpaya_v22_db') || "[]");
     let activeId = null, activeType = '', curTemp = 32, curHum = 60, curLoc = "กรุงเทพฯ (ค่าเริ่มต้น)";
     let processedImageData = "";
 
@@ -150,6 +150,7 @@
         renderUI();
     }
 
+    // ระบบจัดการภาพมือถือ (Ultra Compression 300px) เพื่อป้องกัน LINE LIFF ค้าง
     function mobileImageHandler(input) {
         const file = input.files[0];
         if (!file) return;
@@ -157,7 +158,7 @@
         const status = document.getElementById('upload-status');
         const btn = document.getElementById('save-btn');
         status.style.display = 'block';
-        status.innerText = "⌛ กำลังเพิ่มประสิทธิภาพภาพถ่าย...";
+        status.innerText = "⌛ กำลังบีบอัดภาพเพื่อมือถือ...";
         btn.disabled = true;
         btn.innerText = "กำลังเตรียมภาพ...";
 
@@ -166,27 +167,35 @@
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 500; 
+                // บีบให้เล็กลงเหลือ 300px เพื่อให้ไฟล์เล็กที่สุด (เซฟรอด 100%)
+                const MAX_WIDTH = 300; 
                 const scale = MAX_WIDTH / img.width;
                 canvas.width = MAX_WIDTH;
                 canvas.height = img.height * scale;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 
-                processedImageData = canvas.toDataURL('image/jpeg', 0.7);
+                // ลด Quality ลงเหลือ 0.5 
+                processedImageData = canvas.toDataURL('image/jpeg', 0.5);
                 status.innerText = "✅ ภาพพร้อมบันทึกแล้ว";
                 btn.disabled = false;
                 btn.style.background = "var(--phetpaya)";
                 btn.innerText = "บันทึกข้อมูลเข้าสวน";
+            };
+            img.onerror = function() {
+                status.innerText = "❌ รูปภาพมีปัญหา โปรดลองรูปอื่น";
+                btn.innerText = "รูปภาพมีปัญหา";
             };
             img.src = e.target.result;
         };
         reader.readAsDataURL(file);
     }
 
-    function savePlantV20() {
+    // ใส่ Try-Catch ดักจับกรณีหน่วยความจำมือถือเต็ม
+    function savePlantV22() {
         const name = document.getElementById('p-name').value;
-        if (!name || !processedImageData) return alert("กรุณาระบุชื่อพืชครับ");
+        if (!name) return alert("กรุณาระบุชื่อพืชครับ");
+        if (!processedImageData) return alert("กรุณารอภาพประมวลผลให้เสร็จ หรืออัปโหลดรูปใหม่ครับ");
         
         const newPlant = {
             id: Date.now(),
@@ -195,26 +204,33 @@
             lastW: Date.now() - 86400000,
             lastF: Date.now() - 86400000,
             locationAtReg: curLoc,
-            weatherAtReg: `${curTemp}°C (${curHum}%)`,
+            weatherAtReg: `${Math.round(curTemp)}°C (${curHum}%)`,
             logs: []
         };
         
         plants.push(newPlant);
-        localStorage.setItem('phetpaya_v21_db', JSON.stringify(plants));
-        processedImageData = "";
-        document.getElementById('p-name').value = "";
-        document.getElementById('p-img').value = "";
-        document.getElementById('upload-status').style.display = 'none';
-        closeModal('add-modal');
-        renderUI();
+        
+        try {
+            // จุดที่แอปชอบค้างคือตอนพยายามยัดของใหญ่ลง Storage
+            localStorage.setItem('phetpaya_v22_db', JSON.stringify(plants));
+            processedImageData = "";
+            document.getElementById('p-name').value = "";
+            document.getElementById('p-img').value = "";
+            document.getElementById('upload-status').style.display = 'none';
+            closeModal('add-modal');
+            renderUI();
+            alert("บันทึกสำเร็จ!");
+        } catch (e) {
+            console.error("Storage Error: ", e);
+            plants.pop(); // เอาต้นล่าสุดออกเพราะบันทึกไม่ผ่าน
+            alert("❌ ไม่สามารถบันทึกได้! หน่วยความจำแอป LINE อาจเต็ม แนะนำให้ลองล้างแคช หรือไม่ใส่รูปภาพครับ");
+        }
     }
 
-    // แก้ไขให้มีระบบ Fallback ถ้าระบุพิกัดไม่ได้ภายใน 5 วินาที จะดึงค่ามาตรฐานมาใช้เลย
+    // ระบบพิกัดอัตโนมัติ (Fallback 5 วินาที)
     function updateFullWeather() {
         const setFallbackData = () => {
-            curTemp = 32;
-            curHum = 60;
-            curLoc = "กรุงเทพฯ (ค่าเริ่มต้น)";
+            curTemp = 32; curHum = 60; curLoc = "กรุงเทพฯ (ค่าเริ่มต้น)";
             document.getElementById('loc-text').innerText = "📍 " + curLoc;
             document.getElementById('temp-display').innerText = curTemp + "°C";
             document.getElementById('weather-desc').innerText = "สภาพอากาศปกติ";
@@ -246,16 +262,10 @@
                         if(curTemp > 34) advice = "🔥 ร้อนจัด! ควรพรมน้ำที่ใบและระวังเพลี้ยไฟ";
                         document.getElementById('disease-alert').innerText = advice;
                         renderUI();
-                    } catch(e) { 
-                        console.log(e);
-                        setFallbackData(); 
-                    }
+                    } catch(e) { setFallbackData(); }
                 },
-                (err) => { 
-                    console.log("GPS Denied or Error:", err);
-                    setFallbackData(); 
-                },
-                { timeout: 5000 } // เพิ่ม Timeout 5 วินาที ถ้าหาไม่เจอให้ตัดจบเลย
+                (err) => { setFallbackData(); },
+                { timeout: 5000 }
             );
         } else {
             setFallbackData();
@@ -279,8 +289,8 @@
                     <img src="${p.img}" class="plant-img">
                     <div style="font-weight:600; font-size:18px;">${p.name}</div>
                     <div style="margin-top:8px;">
-                        <span class="schedule-tag ${nextW < now ? 'tag-danger' : 'tag-water'}">💧 รดน้ำถัดไป: ${nextW.toLocaleDateString('th-TH')}</span>
-                        <span class="schedule-tag ${nextF < now ? 'tag-danger' : 'tag-fert'}">🧪 ปุ๋ยถัดไป: ${nextF.toLocaleDateString('th-TH')}</span>
+                        <span class="schedule-tag ${nextW < now ? 'tag-danger' : 'tag-water'}">💧 รดน้ำ: ${nextW.toLocaleDateString('th-TH')}</span>
+                        <span class="schedule-tag ${nextF < now ? 'tag-danger' : 'tag-fert'}">🧪 ปุ๋ย: ${nextF.toLocaleDateString('th-TH')}</span>
                     </div>
                     <div class="btn-group">
                         <div class="btn-action ${isWDone ? 'done' : ''}" onclick="${isWDone ? '' : `openCare(${p.id}, 'water', '${p.name}')`}">
@@ -334,7 +344,7 @@
             }
             return p;
         });
-        localStorage.setItem('phetpaya_v21_db', JSON.stringify(plants));
+        localStorage.setItem('phetpaya_v22_db', JSON.stringify(plants));
         closeModal('care-modal'); renderUI();
     }
 
