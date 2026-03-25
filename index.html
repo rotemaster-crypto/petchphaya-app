@@ -3,130 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phetpaya Garden - Smart Care</title>
+    <title>Phetpaya Garden - AI Care & Shop</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --phetpaya-green: #1B5E20; --light-bg: #F5F7F5; --status-danger: #E53935; --line-shopping: #00b900; }
+        :root { --phetpaya-green: #1B5E20; --light-bg: #F5F7F5; --status-danger: #E53935; --line-shopping: #00b900; --line-chat: #06C755; }
         body { font-family: 'Kanit', sans-serif; background-color: var(--light-bg); margin: 0; padding-bottom: 100px; }
         .container { padding: 15px; max-width: 500px; margin: auto; }
-        .card { background: white; border-radius: 15px; padding: 20px; border: 1px solid #eee; margin-bottom: 15px; }
+        .card { background: white; border-radius: 18px; padding: 22px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         
-        /* Product Card */
-        .product-list { margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
-        .product-item { background: #f9f9f9; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border: 1px solid #efefef; }
-        .product-img { width: 60px; height: 60px; border-radius: 8px; background: #ddd; object-fit: cover; }
-        .btn-buy { background: var(--line-shopping); color: white; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-        
-        /* Form Control */
-        .select-std { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 15px; margin-bottom: 15px; appearance: none; background: #fff url('data:image/svg+xml;charset=US-ASCII,<svg%20xmlns="http://www.w3.org/2000/svg"%20width="24"%20height="24"%20viewBox="0 0 24 24"><path%20fill="%23ccc"%20d="M7%2010l5%205%205-5z"/></svg>') no-repeat right 10px center; }
-        .btn-main { background: var(--phetpaya-green); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: 600; cursor: pointer; }
+        /* Recommendation Box */
+        .advice-container { background: #E8F5E9; border-radius: 12px; padding: 15px; margin-top: 15px; border-left: 5px solid var(--phetpaya-green); }
+        .advice-header { font-weight: 600; color: var(--phetpaya-green); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .advice-detail { font-size: 13.5px; color: #444; line-height: 1.5; }
 
-        /* Navigation */
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 12px 0; z-index: 100; }
-        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #999; }
-        .nav-item.active { color: var(--phetpaya-green); font-weight: 600; }
+        /* Product & Chat Buttons */
+        .product-item { background: #fff; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; margin-top: 10px; border: 1px solid #eee; }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-buy { background: var(--line-shopping); color: white; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+        .btn-chat { background: var(--line-chat); color: white; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+        .select-std { width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #e0e0e0; font-size: 15px; margin-bottom: 15px; background: #fff; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="color:var(--phetpaya-green); text-align:center;">🔍 บันทึกและแก้ปัญหาพืช</h2>
+    <h2 style="color:var(--phetpaya-green); text-align:center;">📋 บันทึกสุขภาพพืช</h2>
     
     <div class="card">
-        <label style="font-weight:600; display:block; margin-bottom:8px;">ระบุอาการที่พบในวันนี้:</label>
-        <select id="issue-select" class="select-std" onchange="showRecommendation()">
-            <option value="">-- โปรดเลือกอาการ --</option>
+        <label style="font-weight:600; display:block; margin-bottom:10px; font-size: 16px;">🔍 ตรวจพบปัญหาอะไรในวันนี้?</label>
+        <select id="issue-select" class="select-std" onchange="processIssue()">
+            <option value="">-- เลือกปัญหาที่พบ --</option>
             <option value="pest">พบเพลี้ยระบาด (เพลี้ยไฟ/ไรแดง)</option>
-            <option value="fungi">พบเชื้อรา (รากเน่า/ใบจุด)</option>
-            <option value="yellow">ใบเหลือง/พืชไม่โต (ขาดสารอาหาร)</option>
-            <option value="worm">พบหนอนเจาะลำต้น/ใบ</option>
+            <option value="fungi">พบเชื้อรา (รากเน่า/ใบจุด/ราสีชมพู)</option>
+            <option value="yellow">ใบเหลือง/พืชโทรม (ขาดสารอาหาร)</option>
+            <option value="worm">พบหนอนเจาะลำต้น หรือหนอนกินใบ</option>
         </select>
         
-        <div id="recommendation-area" style="display:none;">
-            <div id="advice-text" style="background:#FFF3E0; padding:12px; border-radius:10px; border-left:4px solid #FF9800; font-size:13px; margin-bottom:15px;">
-                </div>
+        <div id="solution-area" style="display:none;">
+            <div class="advice-container">
+                <div class="advice-header"><span>💡</span> คำแนะนำเบื้องต้นจากผู้เชี่ยวชาญ</div>
+                <div id="advice-text" class="advice-detail"></div>
+            </div>
 
-            <div class="product-list">
-                <div style="font-weight:600; font-size:14px; margin-bottom:10px; color:var(--phetpaya-green);">📦 สินค้าแนะนำเพื่อการรักษา:</div>
-                <div id="product-items-container">
-                    </div>
+            <div style="margin-top:20px;">
+                <div style="font-weight:600; font-size:15px; margin-bottom:10px; color:var(--phetpaya-green);">📦 แนวทางการรักษาและสินค้าแนะนำ:</div>
+                <div id="product-list"></div>
             </div>
         </div>
 
-        <button class="btn-main" style="margin-top:10px;" onclick="saveAndClose()">บันทึกประวัติการดูแล</button>
+        <button onclick="saveLog()" style="width:100%; padding:15px; border-radius:12px; border:none; background:#eee; color:#666; font-weight:600; margin-top:20px; cursor:pointer;">บันทึกข้อมูลและกลับหน้าหลัก</button>
     </div>
 </div>
 
-<div class="nav-bar">
-    <div class="nav-item active">🌳 รายการพืช</div>
-    <div class="nav-item">🌦️ พยากรณ์โรค</div>
-    <div class="nav-item">📑 รายงาน</div>
-</div>
-
 <script>
-    // ข้อมูลสินค้าที่สัมพันธ์กับอาการ (คุณสามารถเปลี่ยนลิงก์เป็น LINE SHOP ของคุณได้เลย)
-    const shopData = {
+    // ฐานข้อมูลคำแนะนำและสินค้า
+    const expertDatabase = {
         pest: {
-            advice: "⚠️ เพลี้ยไฟมักระบาดในช่วงอากาศแห้ง แนะนำให้ฉีดพ่นช่วงเช้ามืดและสำรวจหลังใบเป็นประจำ",
+            advice: "1. แยกต้นที่ติดเชื้อออก (ถ้าทำได้)\n2. ฉีดพ่นน้ำแรงๆ ใต้ใบเพื่อไล่ตัวอ่อน\n3. หลีกเลี่ยงการใช้ปุ๋ยไนโตรเจนสูงชั่วคราวเพราะจะดึงดูดแมลง\n4. ใช้สารกำจัดแมลงในช่วงเย็นที่แดดไม่จัด",
             products: [
-                { name: "Phetpaya PestKill (กำจัดเพลี้ย)", price: "290.-", link: "https://shop.line.me/@YOUR_ID/product/1", img: "🐞" },
-                { name: "Trikoreac Bio-Guard", price: "350.-", link: "https://shop.line.me/@YOUR_ID/product/2", img: "🛡️" }
+                { name: "Phetpaya PestKill (สูตรน็อคเพลี้ย)", price: "290.-", link: "https://shop.line.me/@YOUR_ID/product/1" }
             ]
         },
         fungi: {
-            advice: "⚠️ พบเชื้อราควรลดความชื้นที่โคนต้น และใช้สารกำจัดเชื้อราที่มีประสิทธิภาพป้องกันการลุกลาม",
+            advice: "1. งดการรดน้ำทางใบและลดความชื้นที่โคนต้น\n2. ตัดแต่งกิ่งที่แห้งตายหรือเป็นโรคออกไปเผาทำลาย\n3. ตรวจสอบระบบระบายน้ำอย่าให้มีน้ำขังโคน\n4. ใช้สารกลุ่มทองแดงหรือไตรโคเดอร์มาเพื่อยับยั้งเชื้อ",
             products: [
-                { name: "สูตรแก้รากเน่าเพชรพญา", price: "450.-", link: "https://shop.line.me/@YOUR_ID/product/3", img: "🍄" },
-                { name: "ไตรโคเดอร์มาชนิดเข้มข้น", price: "190.-", link: "https://shop.line.me/@YOUR_ID/product/4", img: "🧪" }
+                { name: "ไตรโคเดอร์มาชนิดเข้มข้นพิเศษ", price: "195.-", link: "https://shop.line.me/@YOUR_ID/product/3" }
             ]
         },
         yellow: {
-            advice: "⚠️ พืชอาจขาดไนโตรเจนหรือธาตุอาหารรอง แนะนำให้เสริมสารบำรุงทางใบเพื่อให้พืชฟื้นตัวเร็ว",
+            advice: "1. ตรวจสอบค่า pH ของดิน (พืชอาจดูดซึมธาตุอาหารไม่ได้)\n2. พรวนดินรอบทรงพุ่มเพื่อเพิ่มอากาศให้ราก\n3. เสริมธาตุอาหารรองและจุลธาตุทางใบเพื่อให้พืชฟื้นตัวทันที",
             products: [
-                { name: "อาหารเสริมพืชเพชรพญา", price: "320.-", link: "https://shop.line.me/@YOUR_ID/product/5", img: "🌿" }
+                { name: "อาหารเสริมพืชทางใบ Phetpaya Plus", price: "350.-", link: "https://shop.line.me/@YOUR_ID/product/5" }
             ]
         },
         worm: {
-            advice: "⚠️ หนอนเจาะทำลายท่อน้ำเลี้ยง แนะนำให้ทำลายส่วนที่โดนเจาะและใช้สารป้องกันแมลงทันที",
+            advice: "1. สำรวจหารูเจาะหรือมูลหนอนตามกิ่ง\n2. ใช้ลวดเขี่ยตัวหนอนออกหรือฉีดสารเข้าในรูเจาะ\n3. ใช้สารกำจัดแมลงกลุ่มที่ออกฤทธิ์สัมผัสและกินตาย",
             products: [
-                { name: "ชุดกำจัดหนอนเพชรพญา", price: "380.-", link: "https://shop.line.me/@YOUR_ID/product/6", img: "🐛" }
+                { name: "ชุดพิฆาตหนอนเจาะลำต้น", price: "420.-", link: "https://shop.line.me/@YOUR_ID/product/6" }
             ]
         }
     };
 
-    function showRecommendation() {
+    function processIssue() {
         const issue = document.getElementById('issue-select').value;
-        const area = document.getElementById('recommendation-area');
-        const advice = document.getElementById('advice-text');
-        const container = document.getElementById('product-items-container');
+        const area = document.getElementById('solution-area');
+        const adviceBox = document.getElementById('advice-text');
+        const productBox = document.getElementById('product-list');
 
         if (!issue) {
             area.style.display = 'none';
             return;
         }
 
-        const data = shopData[issue];
-        advice.innerText = data.advice;
+        const data = expertDatabase[issue];
         
-        container.innerHTML = data.products.map(p => `
+        // ใส่คำแนะนำ (ทำเป็นรายการบรรทัดใหม่)
+        adviceBox.innerText = data.advice;
+        
+        // ใส่สินค้าและปุ่มแชท
+        productBox.innerHTML = data.products.map(p => `
             <div class="product-item">
-                <div style="font-size:30px;">${p.img}</div>
+                <div style="font-size:30px;">📦</div>
                 <div style="flex:1;">
-                    <div style="font-weight:600; font-size:13px;">${p.name}</div>
-                    <div style="color:var(--status-danger); font-size:12px; font-weight:600;">${p.price}</div>
+                    <div style="font-weight:600; font-size:14px;">${p.name}</div>
+                    <div style="color:var(--status-danger); font-size:13px; font-weight:600;">ราคา ${p.price}</div>
                 </div>
-                <a href="${p.link}" target="_blank" class="btn-buy">🛒 ซื้อเลย</a>
+            </div>
+            <div class="action-buttons">
+                <a href="${p.link}" class="btn-buy">🛒 กดสั่งซื้อเอง</a>
+                <a href="https://line.me/R/oaMessage/@เพชรพญา/?สอบถามเรื่อง${issue}" class="btn-chat">💬 ปรึกษาแอดมิน</a>
             </div>
         `).join('');
 
         area.style.display = 'block';
     }
 
-    function saveAndClose() {
+    function saveLog() {
         const issue = document.getElementById('issue-select').value;
-        if(!issue) return alert("กรุณาเลือกอาการที่พบก่อนบันทึกครับ");
-        alert("บันทึกประวัติเรียบร้อย! อย่าลืมดูแลพืชตามคำแนะนำนะครับ");
+        if(issue) alert("บันทึกประวัติการตรวจพบเรียบร้อย ข้อมูลนี้จะถูกเก็บไว้ในรายงานของคุณ");
+        window.history.back(); // กลับหน้าหลัก
     }
 
     async function init() {
