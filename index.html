@@ -3,172 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phetpaya Garden Pro</title>
+    <title>Phetpaya Garden - AI Pro</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --phetpaya: #2D5A27; --accent: #5E8D5A; --bg: #F8FAF8; --white: #ffffff; }
-        body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; padding-bottom: 120px; color: #333; overflow-x: hidden; }
+        body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; padding-bottom: 120px; color: #333; }
         .container { padding: 20px; max-width: 500px; margin: auto; }
         
-        /* Premium Header */
-        .hero { background: linear-gradient(135deg, #2D5A27, #5E8D5A); color: white; border-radius: 0 0 40px 40px; padding: 40px 25px 60px; box-shadow: 0 10px 30px rgba(45,90,39,0.2); text-align: left; }
-        .card-main { background: var(--white); border-radius: 25px; padding: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); margin-top: -40px; border: 1px solid #f0f0f0; text-align: center; }
+        /* Dashboard Card */
+        .card { background: white; border-radius: 30px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; }
+        .hero-card { background: linear-gradient(135deg, #2D5A27, #5E8D5A); color: white; text-align: left; position: relative; overflow: hidden; }
         
-        /* Features */
+        /* Guide Card Style */
+        .guide-box { display: none; background: white; border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow: hidden; margin-top: 20px; animation: slideUp 0.5s ease; text-align: left; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .care-row { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px 20px; background: #f9fbf9; border-bottom: 1px solid #eee; }
+        .badge { background: white; border: 1px solid #e0eadd; padding: 8px 15px; border-radius: 15px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+        
+        /* Premium Features */
         .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
         .f-item { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 1px solid #eee; transition: 0.3s; cursor: pointer; }
         .f-item:active { transform: scale(0.95); background: #f0f7f0; }
         .f-icon { font-size: 30px; margin-bottom: 10px; display: block; }
-        
-        /* Plant Guide Display */
-        .guide-box { display: none; background: white; border-radius: 30px; overflow: hidden; margin-top: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); animation: slideUp 0.5s ease forwards; text-align: left; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .care-pill-box { display: flex; overflow-x: auto; gap: 10px; padding: 15px 20px; -webkit-overflow-scrolling: touch; }
-        .care-pill { background: #f0f7f0; padding: 10px 18px; border-radius: 15px; font-size: 13px; color: var(--phetpaya); white-space: nowrap; border: 1px solid #e0eadd; font-weight: 500; }
 
-        .btn-action { background: #FF9F43; color: white; border: none; padding: 15px; border-radius: 18px; width: 100%; font-weight: 600; margin-top: 15px; cursor: pointer; font-size: 16px; }
-        .status-msg { text-align: center; margin-top: 15px; font-size: 13px; color: #888; min-height: 20px; }
-        
-        /* Navigation */
-        .nav-tab { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 15px 0 35px; border-radius: 30px 30px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); z-index: 100; }
-        .nav-item { flex: 1; text-align: center; color: #BDC3C7; font-size: 11px; cursor: pointer; }
+        .btn { background: var(--phetpaya); color: white; border: none; padding: 18px; border-radius: 25px; width: 100%; font-weight: 600; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
+        .btn-search { background: var(--accent); }
+        .btn:active { background: #1a3d16; transform: scale(0.98); }
+
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; padding: 15px 0 35px; border-radius: 30px 30px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); }
+        .nav-item { flex: 1; text-align: center; color: #BDC3C7; font-size: 12px; }
         .nav-item.active { color: var(--phetpaya); font-weight: 600; }
     </style>
 </head>
 <body>
 
-<div class="hero">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
-            <div style="font-size: 14px; opacity: 0.9;">ยินดีต้อนรับสู่</div>
-            <div style="font-size: 24px; font-weight: 600;">PHETPAYA GARDEN</div>
-        </div>
-        <div id="weather-box" style="text-align: right;">
-            <b id="temp-val" style="font-size: 28px;">--°C</b><br>
-            <span id="loc-text" style="font-size: 11px; opacity: 0.8;">📍 กำลังระบุตำแหน่ง...</span>
-        </div>
-    </div>
-</div>
-
 <div class="container">
-    <div class="card-main">
-        <div style="display: flex; align-items: center; gap: 15px; text-align: left;">
-            <div style="background: #f0f7f0; padding: 12px; border-radius: 18px; font-size: 24px;">🌿</div>
-            <div>
-                <b style="color:var(--phetpaya); font-size: 16px;">สมุดคู่มือต้นไม้ส่วนตัว</b>
-                <p style="margin:0; font-size: 12px; color: #888;">ค้นหาจากฐานข้อมูลร้าน หรือสแกนโรคด้วย AI</p>
+    <div class="card hero-card">
+        <div id="loc-text" style="font-size: 12px; opacity: 0.8;">📍 กำลังระบุตำแหน่ง...</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <h1 id="temp-val" style="margin:0; font-size: 45px;">--°C</h1>
+            <button onclick="updateGPS()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:8px 15px; border-radius:15px; font-size:12px; cursor:pointer;">🔄 อัปเดต</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0; color: var(--phetpaya);">🩺 คลินิกพืชอัจฉริยะ (Phetpaya Clinic)</h3>
+        <p style="font-size: 12px; color: #888; margin-top: 5px;">สแกนโรคพืช รับวิธีรักษา และคำแนะนำสินค้า</p>
+        
+        <div class="feature-grid">
+            <div class="f-item" onclick="scanAI()">
+                <span class="f-icon">🏥</span>
+                <b>วินิจฉัยโรคพืช</b>
+                <div style="font-size: 10px; color: #999;">ถ่ายรูปวินิจฉัยฟรี!</div>
             </div>
-        </div>
-    </div>
-
-    <div class="feature-grid">
-        <div class="f-item" onclick="searchDB()">
-            <span class="f-icon">📚</span>
-            <b>ค้นหาคู่มือ</b>
-            <div style="font-size: 10px; color: #999;">จาก Plant_DB</div>
-        </div>
-        <div class="f-item" onclick="scanAI()">
-            <span class="f-icon">🏥</span>
-            <b>AI คลินิก</b>
-            <div style="font-size: 10px; color: #999;">วินิจฉัยโรคพืช</div>
-        </div>
-    </div>
-
-    <div id="status-msg" class="status-msg"></div>
-
-    <div id="guide-display" class="guide-box">
-        <div style="background: var(--phetpaya); color: white; padding: 35px 25px;">
-            <div style="font-size: 10px; text-transform: uppercase; opacity: 0.7; letter-spacing: 1px;">Phetpaya Care Guide</div>
-            <h2 id="p-name" style="margin:5px 0; font-size: 26px;"></h2>
-            <div style="margin-top:12px; font-size: 12px; background: rgba(255,255,255,0.2); display: inline-block; padding: 6px 16px; border-radius: 12px;">
-                Health Score: <span id="p-health">--</span>%
+            <div class="f-item" onclick="searchDB()">
+                <span class="f-icon">📚</span>
+                <b>คู่มือการดูแล</b>
+                <div style="font-size: 10px; color: #999;">จาก Plant_DB ของร้าน</div>
             </div>
         </div>
         
-        <div class="care-pill-box">
-            <div class="care-pill">💧 <span id="p-water"></span></div>
-            <div class="care-pill">☀️ <span id="p-light"></span></div>
-            <div class="care-pill">🌱 <span id="p-fert"></span></div>
-        </div>
+        <div id="status-msg" style="margin-top:20px; font-size:13px; color:var(--accent); min-height: 20px;"></div>
+    </div>
 
-        <div style="padding: 25px; padding-top: 0;">
-            <p style="font-size: 12px; font-weight: 600; color: #999; margin: 15px 0 10px; text-transform: uppercase;">วิธีดูแลและหมายเหตุ</p>
-            <div id="p-note" style="font-size: 14px; line-height: 1.8; color: #444; background: #f9fbf9; padding: 20px; border-radius: 20px; border: 1px solid #eee;"></div>
-            
-            <button class="btn-action" onclick="window.open('https://line.me/ti/p/@yourline')">🛒 ปรึกษา / สั่งซื้อวัสดุปลูก</button>
+    <div id="guide-display" class="guide-box">
+        <div style="background: var(--phetpaya); color: white; padding: 30px 20px; text-align: center;">
+            <h2 id="p-name" style="margin:0; font-size: 22px;">ชื่อต้นไม้</h2>
+        </div>
+        <div class="care-row">
+            <div class="badge">💧 <span id="p-water"></span></div>
+            <div class="badge">☀️ <span id="p-light"></span></div>
+            <div class="badge">🌱 <span id="p-fert"></span></div>
+        </div>
+        <div style="padding: 20px;">
+            <p style="font-size: 11px; color: #999; margin: 0 0 5px;">วิธีดูแลรักษา/หมายเหตุ</p>
+            <div id="p-note" style="font-size: 14px; line-height: 1.6; color: #444;"></div>
         </div>
     </div>
 </div>
 
-<div class="nav-tab">
-    <div class="nav-item active">🏡<br>หน้าหลัก</div>
-    <div class="nav-item" onclick="alert('ระบบสะสมแต้มกำลังมาเร็วๆ นี้!')">⭐️<br>สมาชิก</div>
+<div class="nav-bar">
+    <div class="nav-item active">🏡<br>คลินิกพืช</div>
+    <div class="nav-item" onclick="alert('ระบบสะสมแต้มกำลังเปิดตัวเร็วๆ นี้!')">🌿<br>My Garden</div>
     <div class="nav-item" onclick="window.location.reload()">🔄<br>รีเฟรชแอป</div>
 </div>
 
 <script>
-    // *** สำคัญ: ตรวจสอบ URL เว็บแอปของคุณให้ถูกต้อง ***
+    // *** สำคัญ: ตรวจสอบ URL นี้ให้ถูกต้องตามหน้า Deploy ล่าสุด (ลงท้ายด้วย /exec) ***
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwdbNhpErNo49-qPOBb7Q8fM2b3tiPbcDSNH_6QcysM3-rEKCeG_-4KWBjqOTLQzW2xCQ/exec";
 
     function updateGPS() {
         navigator.geolocation.getCurrentPosition(async (pos) => {
-            try {
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=f1311f97b48347f3b60c0f8364843477&units=metric&lang=th`);
-                const data = await res.json();
-                document.getElementById('loc-text').innerText = "📍 " + (data.name || "พื้นที่ของคุณ");
-                document.getElementById('temp-val').innerText = Math.round(data.main.temp) + "°C";
-            } catch(e) {
-                document.getElementById('loc-text').innerText = "📍 ระบุตำแหน่งไม่สำเร็จ";
-            }
-        }, (err) => {
-            document.getElementById('loc-text').innerText = "📍 กรุณาอนุญาตเข้าถึง GPS";
+            const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=f1311f97b48347f3b60c0f8364843477&units=metric&lang=th`);
+            const data = await res.json();
+            document.getElementById('loc-text').innerText = "📍 " + (data.name || "พื้นที่ของคุณ");
+            document.getElementById('temp-val').innerText = Math.round(data.main.temp) + "°C";
         });
     }
 
     async function searchDB() {
-        const name = prompt("ระบุชื่อต้นไม้ที่ต้องการค้นหา (เช่น ไทร, สนฉัตร):");
+        const name = prompt("ระบุชื่อต้นไม้ที่คุณเตรียมไว้ใน Plant_DB:");
         if(!name) return;
-        
         const status = document.getElementById('status-msg');
         const guide = document.getElementById('guide-display');
-        
-        status.innerText = "⏳ กำลังดึงข้อมูลจากสวน...";
+        status.innerText = "🔍 กำลังดึงข้อมูลจาก Plant_DB ของสวน...";
         guide.style.display = "none";
 
         try {
-            // ส่งข้อมูลไปที่ Apps Script
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'searchDB', plantName: name })
-            });
-            const data = await response.json();
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'searchDB', plantName: name }) });
+            const data = await res.json();
             
             if(data.status === "success") {
                 document.getElementById('p-name').innerText = data.name;
-                document.getElementById('p-water').innerText = data.water || "-";
-                document.getElementById('p-light').innerText = data.light || "-";
-                document.getElementById('p-fert').innerText = data.fertilizer || "-";
-                document.getElementById('p-note').innerText = data.note || "-";
-                document.getElementById('p-health').innerText = data.health || "100";
-                
-                status.innerText = "";
+                document.getElementById('p-water').innerText = data.water;
+                document.getElementById('p-light').innerText = data.light;
+                document.getElementById('p-fert').innerText = data.fertilizer;
+                document.getElementById('p-note').innerText = data.note;
+                status.innerText = "✅ ค้นหาสำเร็จ";
                 guide.style.display = "block";
                 window.scrollTo({ top: 350, behavior: 'smooth' });
-            } else {
-                status.innerText = "❌ ไม่พบพืชชื่อ '" + name + "' ในฐานข้อมูลร้าน";
-            }
-        } catch(e) { 
-            status.innerText = "⚠️ การเชื่อมต่อขัดข้อง โปรดลองใหม่อีกครั้ง";
-            console.error(e);
-        }
+            } else { status.innerText = "❌ ไม่พบพืชชื่อนี้ในฐานข้อมูลร้าน"; }
+        } catch(e) { status.innerText = "⚠️ การเชื่อมต่อฐานข้อมูลขัดข้อง"; }
     }
 
+    // ฟังก์ชัน AI สแกนโรคพืช - ปรับปรุงเพื่อไม่ให้ค้าง
     function scanAI() {
         const input = document.createElement('input');
         input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
         input.onchange = async (e) => {
+            const file = e.target.files[0];
             const status = document.getElementById('status-msg');
             const guide = document.getElementById('guide-display');
             
@@ -179,32 +144,30 @@
             reader.onload = async (ev) => {
                 const img = new Image();
                 img.onload = async () => {
+                    // *** แก้ไข: ย่อขนาดรูปภาพก่อนส่ง ***
                     const canvas = document.createElement('canvas');
-                    // ย่อขนาดรูปเพื่อส่งได้เร็วขึ้น
-                    canvas.width = 500; canvas.height = (img.height/img.width)*500;
+                    canvas.width = 500; // ย่อเหลือความกว้าง 500px
+                    canvas.height = (img.height/img.width)*500;
                     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.6);
+                    const base64 = canvas.toDataURL('image/jpeg', 0.6); // คุณภาพ 0.6 (ย่อขนาดรูป)
 
                     try {
-                        const res = await fetch(SCRIPT_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'ai', image: base64 })
-                        });
+                        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'ai', image: base64 }) });
                         const text = await res.text();
-                        status.innerHTML = `<div style="text-align:left; background:white; padding:25px; border-radius:25px; border:1px solid #e0eadd; margin-top:20px; line-height:1.8; box-shadow: 0 10px 30px rgba(0,0,0,0.05);"><b>🚑 ผลการวินิจฉัยจาก AI:</b><br>${text.replace(/\n/g, '<br>')}</div>`;
+                        // แสดงผล AI ในรูปแบบที่สวยงามขึ้น
+                        status.innerHTML = `<div style="text-align:left; background:white; padding:20px; border-radius:20px; border:1px solid #e0eadd; margin-top:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); line-height:1.8;"><b>🚑 ผลการวินิจฉัยจาก AI:</b><br>${text.replace(/\n/g, '<br>')}</div>`;
                     } catch(err) {
-                        status.innerText = "⚠️ AI ขัดข้องชั่วคราว โปรดลองใหม่อีกครั้ง";
+                        status.innerText = "⚠️ AI ขัดข้อง โปรดลองใหม่";
                     }
                 };
                 img.src = ev.target.result;
             };
-            reader.readAsDataURL(e.target.files[0]);
+            reader.readAsDataURL(file);
         };
         input.click();
     }
 
-    // เรียกใช้อากาศทันทีที่เปิดแอป
-    window.onload = updateGPS;
+    updateGPS();
 </script>
 </body>
 </html>
