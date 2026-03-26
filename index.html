@@ -3,54 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phetpaya Garden - AI Pro</title>
+    <title>Phetpaya Smart Garden</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --phetpaya: #2D5A27; --accent: #5E8D5A; --bg: #F4F7F4; }
-        body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; padding-bottom: 120px; color: #333; }
+        body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; padding-bottom: 120px; }
         .container { padding: 20px; max-width: 500px; margin: auto; }
         .card { background: white; border-radius: 30px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; }
-        
-        /* Dashboard Card */
-        .hero-card { background: linear-gradient(135deg, #2D5A27, #5E8D5A); color: white; text-align: left; position: relative; overflow: hidden; }
-        
-        /* Guide Card Style */
-        .guide-box { display: none; background: white; border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow: hidden; margin-top: 20px; animation: slideUp 0.5s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-        .care-row { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px 20px; background: #f9fbf9; border-bottom: 1px solid #eee; }
-        .badge { background: white; border: 1px solid #e0eadd; padding: 8px 15px; border-radius: 15px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-        
         .btn { background: var(--phetpaya); color: white; border: none; padding: 18px; border-radius: 25px; width: 100%; font-weight: 600; cursor: pointer; margin-top: 10px; font-size: 16px; }
-        .btn-search { background: var(--accent); }
-
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; padding: 15px 0 35px; border-radius: 30px 30px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); }
-        .nav-item { flex: 1; text-align: center; color: #BDC3C7; font-size: 12px; }
+        .guide-box { display: none; background: white; border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow: hidden; margin-top: 20px; text-align: left; }
+        .care-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 15px 20px; background: #f9fbf9; border-bottom: 1px solid #eee; }
+        .badge { background: white; border: 1px solid #e0eadd; padding: 6px 12px; border-radius: 12px; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="card hero-card">
-        <div id="loc-text" style="font-size: 12px; opacity: 0.8;">📍 กำลังระบุตำแหน่ง...</div>
+    <div class="card" style="background: linear-gradient(135deg, #2D5A27, #5E8D5A); color: white; text-align: left;">
+        <div id="loc-text">📍 รอยืนยันตำแหน่ง...</div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
             <h1 id="temp-val" style="margin:0; font-size: 45px;">--°C</h1>
-            <button onclick="updateGPS()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:8px 15px; border-radius:15px; cursor:pointer;">🔄 อัปเดต</button>
+            <button onclick="updateGPS()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:8px 15px; border-radius:15px; font-size:12px; cursor:pointer;">🔄 อัปเดต</button>
         </div>
     </div>
 
     <div class="card">
-        <h3 style="margin-top:0;">📚 ค้นหาคู่มือจาก Plant_DB</h3>
-        <p style="font-size: 12px; color: #888;">พิมพ์ชื่อพืชที่เตรียมไว้ในฐานข้อมูลของคุณ</p>
-        <button class="btn btn-search" onclick="searchDB()">🔍 ค้นหาต้นไม้ของฉัน</button>
+        <h3>🔍 ค้นหาคู่มือจาก Plant_DB</h3>
+        <button class="btn" style="background: var(--accent);" onclick="searchDB()">🔍 ค้นหาต้นไม้ของฉัน</button>
         <button class="btn" style="background:#f0f0f0; color:#333;" onclick="scanAI()">📷 สแกนวินิจฉัยโรค (AI)</button>
-        <div id="status-msg" style="margin-top:15px; font-size:13px; color:var(--accent);"></div>
+        <div id="status-msg" style="margin-top:15px; font-size:13px; color:orange;"></div>
     </div>
 
     <div id="guide-display" class="guide-box">
-        <div style="background: var(--phetpaya); color: white; padding: 30px 20px; text-align: center;">
-            <h2 id="p-name" style="margin:0; font-size: 20px;">ชื่อต้นไม้</h2>
+        <div style="background: var(--phetpaya); color: white; padding: 25px; text-align: center;">
+            <h2 id="p-name" style="margin:0; font-size: 20px;"></h2>
         </div>
         <div class="care-row">
             <div class="badge">💧 <span id="p-water"></span></div>
@@ -58,37 +45,29 @@
             <div class="badge">🌱 <span id="p-fert"></span></div>
         </div>
         <div style="padding: 20px;">
-            <p style="font-size: 11px; color: #999; margin: 0 0 5px;">หมายเหตุ / วิธีดูแลเพิ่มเติม</p>
-            <div id="p-note" style="font-size: 14px; line-height: 1.6; color: #444;"></div>
+            <div id="p-note" style="font-size: 14px; line-height: 1.6;"></div>
         </div>
     </div>
 </div>
 
-<div class="nav-bar">
-    <div class="nav-item" style="color: var(--phetpaya);">🏡<br>Dashboard</div>
-    <div class="nav-item" onclick="alert('Coming Soon')">🌿<br>My Garden</div>
-</div>
-
 <script>
-    // *** เปลี่ยน URL ตรงนี้เป็น URL ล่าสุดจากหน้า Deployment (Anyone) ***
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwdbNHpErNo49-qPOBb7Q8fM2b3tiPbcDSNH_6QcysM3-rEKCeG_-4KWBjqOTLqzW2xCQ/exec";
+    // *** สำคัญ: ตรวจสอบ URL นี้ให้ถูกต้องจากหน้า Deploy ล่าสุด ***
+    const SCRIPT_URL = "ใส่_URL_เว็บแอป_ของคุณที่นี่";
 
-    function updateGPS() {
+    async function updateGPS() {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&appid=f1311f97b48347f3b60c0f8364843477&units=metric&lang=th`);
             const data = await res.json();
-            document.getElementById('loc-text').innerText = "📍 " + data.name;
+            document.getElementById('loc-text').innerText = "📍 " + (data.name || "ระบุตำแหน่งแล้ว");
             document.getElementById('temp-val').innerText = Math.round(data.main.temp) + "°C";
-        });
+        }, (err) => { alert("กรุณาเปิด GPS และอนุญาตสิทธิ์"); });
     }
 
     async function searchDB() {
         const name = prompt("ระบุชื่อต้นไม้:");
         if(!name) return;
         const status = document.getElementById('status-msg');
-        const guide = document.getElementById('guide-display');
-        status.innerText = "🔍 กำลังดึงข้อมูลจาก Plant_DB...";
-        guide.style.display = "none";
+        status.innerText = "⏳ กำลังดึงข้อมูล...";
 
         try {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'searchDB', plantName: name }) });
@@ -100,39 +79,37 @@
                 document.getElementById('p-fert').innerText = data.fertilizer;
                 document.getElementById('p-note').innerText = data.note;
                 status.innerText = "✅ ดึงข้อมูลสำเร็จ";
-                guide.style.display = "block";
-            } else { status.innerText = "❌ ไม่พบพืชชื่อนี้"; }
-        } catch(e) { status.innerText = "⚠️ การเชื่อมต่อขัดข้อง"; }
+                document.getElementById('guide-display').style.display = "block";
+            } else { status.innerText = "❌ ไม่พบพืชชื่อนี้ในฐานข้อมูล"; }
+        } catch(e) { status.innerText = "⚠️ เชื่อมต่อ Apps Script ไม่ได้ (ตรวจสอบ URL/การ Deploy)"; }
     }
 
-    function scanAI() {
+    async function scanAI() {
         const input = document.createElement('input');
         input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
         input.onchange = async (e) => {
-            const file = e.target.files[0];
             const status = document.getElementById('status-msg');
-            status.innerText = "⏳ AI Gemini กำลังวิเคราะห์โรค...";
-            document.getElementById('guide-display').style.display = "none";
-
+            status.innerText = "⏳ AI Gemini กำลังวิเคราะห์...";
             const reader = new FileReader();
             reader.onload = async (ev) => {
                 const img = new Image();
                 img.onload = async () => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = 500; canvas.height = (img.height/img.width)*500;
+                    canvas.width = 400; canvas.height = (img.height/img.width)*400;
                     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                     const base64 = canvas.toDataURL('image/jpeg', 0.6);
-                    const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ image: base64 }) });
-                    const text = await res.text();
-                    status.innerHTML = `<div style="text-align:left; background:white; padding:20px; border-radius:20px; border:2px solid var(--phetpaya); margin-top:10px;"><b>🏥 ผลวินิจฉัย:</b><br>${text.replace(/\n/g, '<br>')}</div>`;
+                    try {
+                        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'ai', image: base64 }) });
+                        const text = await res.text();
+                        status.innerHTML = `<div style="text-align:left; background:white; padding:15px; border-radius:15px; border:2px solid var(--phetpaya); margin-top:10px;"><b>🏥 ผลวินิจฉัย:</b><br>${text.replace(/\n/g, '<br>')}</div>`;
+                    } catch(err) { status.innerText = "⚠️ AI ขัดข้อง"; }
                 };
                 img.src = ev.target.result;
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(e.target.files[0]);
         };
         input.click();
     }
-    updateGPS();
 </script>
 </body>
 </html>
