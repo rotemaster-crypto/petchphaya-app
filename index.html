@@ -130,38 +130,38 @@
 
     // ฟังก์ชัน AI สแกนโรคพืช - ปรับปรุงเพื่อไม่ให้ค้าง
     function scanAI() {
-    const status = document.getElementById('status-msg');
-    status.innerHTML = "⏳ กำลังเรียกใช้ระบบสแกนอัจฉริยะจาก Google...";
-
     const input = document.createElement('input');
-    input.type = 'file'; 
-    input.accept = 'image/*'; 
-    input.capture = 'environment';
-    
+    input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
     input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
+        const status = document.getElementById('status-msg');
+        status.innerHTML = "⏳ <b>Phetpaya AI</b> กำลังตรวจสุขภาพพืชให้คุณ...";
+        
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            const img = new Image();
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 500; canvas.height = (img.height/img.width)*500;
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                const base64 = canvas.toDataURL('image/jpeg', 0.6);
 
-        status.innerHTML = "✅ เตรียมรูปเรียบร้อย! กำลังค้นหาข้อมูลโรคและชื่อพืช...";
-
-        // พาลูกค้าไปที่ Google Lens Search โดยตรง (เป็นวิธีที่เสถียรที่สุดของ Google)
-        // หมายเหตุ: วิธีนี้จะเปิดหน้าค้นหาภาพของ Google ซึ่งแม่นยำกว่า AI เดี่ยวๆ มาก
-        setTimeout(() => {
-            // ส่งไปหน้าค้นหาด้วยภาพของ Google
-            window.location.href = "https://www.google.com/search?q=วิธีรักษาโรคต้นไม้ " + file.name + "&tbm=isch";
-            
-            // หรือเปิดหน้าค้นหาแบบ Visual Search
-            alert("ระบบจะพาคุณไปสแกนด้วย Google Lens\nกรุณากดที่ 'รูปกล้อง' เพื่อค้นหาชื่อและโรคพืชที่แม่นยำที่สุดครับ");
-            window.location.href = "https://www.google.com/visualsearch?vsl=1";
-        }, 1500);
-
-        // บันทึกสถิติลง Sheet ว่ามีคนใช้ระบบสแกน
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'log_consult', plant: 'User used Lens' })
-        });
+                try {
+                    const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ image: base64 }) });
+                    const text = await res.text();
+                    // แสดงผลในหน้าแอปเลย ไม่เด้งไปไหน
+                    status.innerHTML = `<div style="text-align:left; background:white; padding:20px; border-radius:20px; border:1px solid #e0eadd; margin-top:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); line-height:1.8;">
+                        <b style="color:#2D5A27;">🚑 ผลวินิจฉัยจากคลินิกพืช:</b><br>${text.replace(/\n/g, '<br>')}
+                    </div>`;
+                } catch(err) {
+                    status.innerText = "⚠️ ระบบ AI ติดขัดชั่วคราว โปรดลองใหม่";
+                }
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
     };
     input.click();
+
 
     }
 
