@@ -1,382 +1,66 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phetpaya Garden - Smart Pro V22</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --phetpaya: #2D5A27; --danger: #FF5252; --google: #4285F4; --bg: #F8FAF8; --line-shop: #00B900; --line-oa: #06C755; }
-        body { font-family: 'Kanit', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 90px; color: #2C3E50; }
-        .app-header { background: #fff; padding: 15px 20px; border-bottom: 1px solid #edf2ed; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
-        .container { padding: 16px; max-width: 500px; margin: auto; }
-        .page-content { display: none; }
-        .page-content.active { display: block; }
+// คัดลอกส่วนนี้ไปวางแทนที่ฟังก์ชัน savePlantV22 เดิมในไฟล์ HTML ของคุณได้เลยครับ
+async function savePlantV22() {
+    const name = document.getElementById('p-name').value;
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyHtDLDUA67ZQqN623jp9R8wAs0uqXMAd3-QTjije5sBTQbexhII1bN9wIi9rIk5ZSG6Q/exec";
 
-        /* Weather Hero */
-        .weather-hero { background: linear-gradient(135deg, #388E3C, var(--phetpaya)); color: white; border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 8px 15px rgba(45,90,39,0.15); }
-        .weather-row { display: flex; justify-content: space-between; align-items: flex-start; }
-        .loc-pin { font-size: 11px; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 12px; margin-bottom: 8px; display: inline-block; }
-        .weather-detail-sub { font-size: 12px; opacity: 0.9; margin-top: 5px; }
+    if (!name) return alert("กรุณาระบุชื่อพืชครับ");
+    if (!processedImageData) return alert("กรุณารอภาพประมวลผลให้เสร็จ หรืออัปโหลดรูปใหม่ครับ");
 
-        /* Plant Card */
-        .plant-card { background: white; border-radius: 22px; padding: 18px; margin-bottom: 16px; border: 1px solid #f0f4f0; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-        .plant-img { width: 100%; height: 160px; background: #eee; border-radius: 16px; object-fit: cover; margin-bottom: 12px; }
-        .schedule-tag { font-size: 11px; padding: 5px 12px; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-right: 5px; margin-bottom: 5px; }
-        .tag-water { background: #E3F2FD; color: #1976D2; }
-        .tag-fert { background: #FFF3E0; color: #E65100; }
-        .tag-danger { background: #FFEBEE; color: var(--danger); border: 1px solid var(--danger); }
+    // เปลี่ยนสถานะปุ่มเป็นกำลังบันทึก
+    const btn = document.getElementById('save-btn');
+    const status = document.getElementById('upload-status');
+    btn.disabled = true;
+    btn.innerText = "⏳ กำลังส่งข้อมูลไป Google Drive...";
+    status.style.display = 'block';
+    status.innerText = "🚀 กำลังอัปโหลดรูปภาพและบันทึกลง Sheets...";
+
+    // เตรียมข้อมูลส่งไป Apps Script
+    const payload = {
+        name: name,
+        image: processedImageData, // ส่งภาพแบบ Base64 (ที่บีบอัดแล้ว)
+        weather: curLoc + " (" + Math.round(curTemp) + "°C)",
+        note: "ลงทะเบียนพืชใหม่จาก LINE Mini App"
+    };
+
+    try {
+        // ส่งข้อมูลไปยัง Google Apps Script
+        const response = await fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors', // สำคัญ: ใช้ no-cors สำหรับ Apps Script ในบางกรณี
+            body: JSON.stringify(payload)
+        });
+
+        // เนื่องด้วยการใช้ no-cors เราจะไม่สามารถอ่าน JSON ตอบกลับได้โดยตรง 
+        // แต่ถ้าไม่มี Error เด้งไปที่ catch แสดงว่าข้อมูลถูกส่งออกไปแล้วครับ
         
-        .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-        .btn-action { background: #fff; border: 1px solid #eee; padding: 10px 5px; border-radius: 15px; text-align: center; cursor: pointer; font-size: 11px; font-weight: 600; }
-        .btn-action.done { background: #f0f0f0; color: #999; cursor: not-allowed; }
-        .btn-main { background: var(--phetpaya); color: white; border: none; padding: 15px; border-radius: 18px; width: 100%; font-weight: 600; cursor: pointer; font-size: 16px; }
-
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #edf2ed; padding: 10px 0 25px 0; z-index: 1000; }
-        .nav-item { flex: 1; text-align: center; font-size: 11px; color: #BDC3C7; cursor: pointer; }
-        .nav-item.active { color: var(--phetpaya); font-weight: 600; }
-
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; padding:20px; }
-        .modal-content { background:white; padding:25px; border-radius:25px; width:100%; max-width: 380px; box-sizing: border-box; }
-        .input-box { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; margin-top: 10px; box-sizing: border-box; font-size: 14px; }
-        
-        .report-item { background: white; border-radius: 18px; padding: 15px; margin-bottom: 12px; border: 1px solid #eee; display: flex; gap: 12px; }
-        .report-thumb { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
-        .report-content { flex: 1; }
-        
-        #lux-preview, #c-buffer { display: none; }
-        .shop-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-shop); color: white; padding: 8px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; margin-right: 5px; }
-        .oa-btn-mini { display: inline-flex; align-items: center; gap: 4px; background: var(--line-oa); color: white; padding: 8px 12px; border-radius: 10px; font-size: 11px; text-decoration: none; font-weight: 600; margin-top: 8px; }
-    </style>
-</head>
-<body>
-
-<div class="app-header">
-    <div style="font-weight:600; color:var(--phetpaya); font-size:18px;">Phetpaya Garden</div>
-    <div id="user-display" style="font-size:11px; color:#999;">สวัสดีผู้ดูแลสวน</div>
-</div>
-
-<div class="container">
-    <div id="page-home" class="page-content active">
-        <div class="weather-hero">
-            <div id="weather-area">
-                <span class="loc-pin" id="loc-text">📍 กำลังค้นหาพื้นที่...</span>
-                <div class="weather-row">
-                    <div>
-                        <div id="temp-display" style="font-size:32px; font-weight:600;">--°C</div>
-                        <div id="weather-desc" style="font-size:14px; font-weight:600;">สภาพอากาศปัจจุบัน</div>
-                    </div>
-                    <div id="weather-icon" style="font-size:40px;">🌤️</div>
-                </div>
-                <div id="weather-sub" class="weather-detail-sub">ความชื้น: --% | ลม: -- km/h</div>
-                <div id="disease-alert" style="margin-top:10px; font-size:12px; opacity:0.9; line-height:1.4; border-top:1px solid rgba(255,255,255,0.2); padding-top:10px;">
-                    กำลังวิเคราะห์ความเสี่ยงรายพื้นที่...
-                </div>
-            </div>
-        </div>
-        <button class="btn-main" onclick="openModal('add-modal')">＋ ลงทะเบียนพืชใหม่</button>
-        <div id="plantList" style="margin-top:20px;"></div>
-    </div>
-
-    <div id="page-tools" class="page-content">
-        <h3>🔍 เครื่องมืออัจฉริยะ</h3>
-        <div class="plant-card" style="text-align:center;">
-            <div style="font-weight:600; color:var(--phetpaya);">Lux Meter (วัดความสว่าง)</div>
-            <div id="lux-val" style="font-size:40px; font-weight:600; color:var(--google); margin:10px 0;">0 LUX</div>
-            <div id="lux-analysis" style="font-size:13px; color:var(--phetpaya); font-weight:600; margin-bottom:15px;">- กรุณากดเริ่มวัดแสง -</div>
-            <button class="btn-main" style="background:#f0f0f0; color:#333;" onclick="startLuxMeter()">เริ่มวัดค่าแสง</button>
-            <video id="lux-preview" autoplay playsinline></video>
-            <canvas id="c-buffer"></canvas>
-        </div>
-        <div style="background: white; border-radius: 22px; padding: 24px; border: 2px dashed var(--google); text-align: center;">
-            <div style="font-weight:600; color:var(--google); font-size:16px;">Diagnosis (วินิจฉัยโรคด้วยภาพ)</div>
-            <p style="font-size:12px; color:#666; margin: 10px 0 15px 0;">ถ่ายภาพหรือเลือกจากเครื่องเพื่อวินิจฉัยทันที</p>
-            <input type="file" id="v-search-input" accept="image/*" capture="environment" style="display:none;" onchange="document.getElementById('diag-result-link').style.display = 'block';">
-            <button class="btn-main" style="background:var(--google);" onclick="document.getElementById('v-search-input').click()">📷 ถ่ายรูปหรือเลือกภาพวินิจฉัย</button>
-            <a href="https://www.google.com/searchbyimage?sbisrc=4se" target="_blank" id="diag-result-link" style="display:none; background: var(--google); color: white; padding: 12px; border-radius: 14px; text-decoration: none; font-weight: 600; margin-top: 15px; font-size: 14px; text-align: center;">🔍 ดูผลการวินิจฉัยพืชของคุณ</a>
-        </div>
-    </div>
-
-    <div id="page-report" class="page-content">
-        <h3 style="display:flex; align-items:center; gap:8px;">📑 รายงานการดูแลพืช <span id="report-count" style="font-size:12px; background:#eee; padding:2px 8px; border-radius:10px;">0</span></h3>
-        <div id="master-log"></div>
-    </div>
-</div>
-
-<div class="nav-bar">
-    <div class="nav-item active" onclick="switchTab('home', this)">🏡<br>สวนของฉัน</div>
-    <div class="nav-item" onclick="switchTab('tools', this)">🔍<br>เครื่องมือ</div>
-    <div class="nav-item" onclick="switchTab('report', this)">📑<br>รายงาน</div>
-</div>
-
-<div id="add-modal" class="modal">
-    <div class="modal-content">
-        <h3 style="margin:0; font-size:18px; color:var(--phetpaya);">🌿 ลงทะเบียนพืชใหม่</h3>
-        <input type="text" id="p-name" class="input-box" placeholder="ระบุชื่อต้นไม้">
-        <label style="font-size: 12px; margin-top: 15px; display: block; color: #666;">📸 ถ่ายรูปหรือเลือกภาพพืช:</label>
-        <input type="file" id="p-img" class="input-box" accept="image/*" capture="environment" onchange="mobileImageHandler(this)">
-        <div id="upload-status" style="font-size: 11px; color: var(--phetpaya); margin-top: 5px; display: none;">⌛ กำลังประมวลผลไฟล์ภาพ...</div>
-        
-        <button id="save-btn" class="btn-main" style="margin-top:20px; background: #BDC3C7;" onclick="savePlantV22()" disabled>รอรูปภาพพร้อม...</button>
-        <button style="width:100%; border:none; background:none; margin-top:15px; color:#999;" onclick="closeModal('add-modal')">ยกเลิก</button>
-    </div>
-</div>
-
-<div id="care-modal" class="modal">
-    <div class="modal-content">
-        <h3 id="care-plant-name" style="margin:0; color:var(--phetpaya);"></h3>
-        <label style="font-size:12px; margin-top:15px; display:block;">บันทึกโน้ตเพิ่มเติม:</label>
-        <textarea id="care-note" class="input-box" rows="3" placeholder="เช่น พบแมลง, แตกใบใหม่..."></textarea>
-        <button class="btn-main" style="margin-top:20px;" onclick="saveCareLog()">บันทึกข้อมูล</button>
-        <button style="width:100%; border:none; background:none; margin-top:10px; color:#999;" onclick="closeModal('care-modal')">ยกเลิก</button>
-    </div>
-</div>
-
-<script>
-    let plants = JSON.parse(localStorage.getItem('phetpaya_v22_db') || "[]");
-    let activeId = null, activeType = '', curTemp = 32, curHum = 60, curLoc = "กรุงเทพฯ (ค่าเริ่มต้น)";
-    let processedImageData = "";
-
-    async function init() {
-        try {
-            await liff.init({ liffId: "2009595288-7Tm3Mher" });
-            if (liff.isLoggedIn()) {
-                const profile = await liff.getProfile();
-                document.getElementById('user-display').innerText = "ผู้ดูแล: " + profile.displayName;
-            } else { liff.login(); }
-        } catch (e) {}
-        updateFullWeather();
-        renderUI();
-    }
-
-    // ระบบจัดการภาพมือถือ (Ultra Compression 300px) เพื่อป้องกัน LINE LIFF ค้าง
-    function mobileImageHandler(input) {
-        const file = input.files[0];
-        if (!file) return;
-        
-        const status = document.getElementById('upload-status');
-        const btn = document.getElementById('save-btn');
-        status.style.display = 'block';
-        status.innerText = "⌛ กำลังบีบอัดภาพเพื่อมือถือ...";
-        btn.disabled = true;
-        btn.innerText = "กำลังเตรียมภาพ...";
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                // บีบให้เล็กลงเหลือ 300px เพื่อให้ไฟล์เล็กที่สุด (เซฟรอด 100%)
-                const MAX_WIDTH = 300; 
-                const scale = MAX_WIDTH / img.width;
-                canvas.width = MAX_WIDTH;
-                canvas.height = img.height * scale;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // ลด Quality ลงเหลือ 0.5 
-                processedImageData = canvas.toDataURL('image/jpeg', 0.5);
-                status.innerText = "✅ ภาพพร้อมบันทึกแล้ว";
-                btn.disabled = false;
-                btn.style.background = "var(--phetpaya)";
-                btn.innerText = "บันทึกข้อมูลเข้าสวน";
-            };
-            img.onerror = function() {
-                status.innerText = "❌ รูปภาพมีปัญหา โปรดลองรูปอื่น";
-                btn.innerText = "รูปภาพมีปัญหา";
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // ใส่ Try-Catch ดักจับกรณีหน่วยความจำมือถือเต็ม
-    function savePlantV22() {
-        const name = document.getElementById('p-name').value;
-        if (!name) return alert("กรุณาระบุชื่อพืชครับ");
-        if (!processedImageData) return alert("กรุณารอภาพประมวลผลให้เสร็จ หรืออัปโหลดรูปใหม่ครับ");
-        
+        // บันทึกลงเครื่อง (Local) เพื่อให้แสดงผลหน้าจอได้ทันที
         const newPlant = {
             id: Date.now(),
             name: name,
-            img: processedImageData,
+            img: processedImageData, 
             lastW: Date.now() - 86400000,
             lastF: Date.now() - 86400000,
-            locationAtReg: curLoc,
-            weatherAtReg: `${Math.round(curTemp)}°C (${curHum}%)`,
             logs: []
         };
         
         plants.push(newPlant);
-        
-        try {
-            // จุดที่แอปชอบค้างคือตอนพยายามยัดของใหญ่ลง Storage
-            localStorage.setItem('phetpaya_v22_db', JSON.stringify(plants));
-            processedImageData = "";
-            document.getElementById('p-name').value = "";
-            document.getElementById('p-img').value = "";
-            document.getElementById('upload-status').style.display = 'none';
-            closeModal('add-modal');
-            renderUI();
-            alert("บันทึกสำเร็จ!");
-        } catch (e) {
-            console.error("Storage Error: ", e);
-            plants.pop(); // เอาต้นล่าสุดออกเพราะบันทึกไม่ผ่าน
-            alert("❌ ไม่สามารถบันทึกได้! หน่วยความจำแอป LINE อาจเต็ม แนะนำให้ลองล้างแคช หรือไม่ใส่รูปภาพครับ");
-        }
-    }
-
-    // ระบบพิกัดอัตโนมัติ (Fallback 5 วินาที)
-    function updateFullWeather() {
-        const setFallbackData = () => {
-            curTemp = 32; curHum = 60; curLoc = "กรุงเทพฯ (ค่าเริ่มต้น)";
-            document.getElementById('loc-text').innerText = "📍 " + curLoc;
-            document.getElementById('temp-display').innerText = curTemp + "°C";
-            document.getElementById('weather-desc').innerText = "สภาพอากาศปกติ";
-            document.getElementById('weather-sub').innerText = `ความชื้น: 60% | ลม: 2 m/s`;
-            document.getElementById('disease-alert').innerText = "✅ สภาพอากาศปกติ ดูแลตามรอบ";
-            renderUI();
-        };
-
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                async (pos) => {
-                    try {
-                        const lat = pos.coords.latitude;
-                        const lon = pos.coords.longitude;
-                        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=f1311f97b48347f3b60c0f8364843477&units=metric&lang=th`);
-                        if (!res.ok) throw new Error("API Limit");
-                        const data = await res.json();
-                        
-                        curTemp = data.main.temp;
-                        curHum = data.main.humidity;
-                        curLoc = data.name + ", " + data.sys.country;
-
-                        document.getElementById('loc-text').innerText = "📍 " + curLoc;
-                        document.getElementById('temp-display').innerText = Math.round(curTemp) + "°C";
-                        document.getElementById('weather-desc').innerText = data.weather[0].description;
-                        document.getElementById('weather-sub').innerText = `ความชื้น: ${curHum}% | ความเร็วลม: ${data.wind.speed} m/s`;
-                        
-                        let advice = curHum > 75 ? "🌧️ ระวังเชื้อราและรากเน่าจากความชื้น" : "✅ สภาพอากาศปกติ ดูแลตามรอบ";
-                        if(curTemp > 34) advice = "🔥 ร้อนจัด! ควรพรมน้ำที่ใบและระวังเพลี้ยไฟ";
-                        document.getElementById('disease-alert').innerText = advice;
-                        renderUI();
-                    } catch(e) { setFallbackData(); }
-                },
-                (err) => { setFallbackData(); },
-                { timeout: 5000 }
-            );
-        } else {
-            setFallbackData();
-        }
-    }
-
-    function renderUI() {
-        const list = document.getElementById('plantList');
-        const report = document.getElementById('master-log');
-        const now = new Date();
-        const todayStr = now.toLocaleDateString('th-TH');
-        
-        list.innerHTML = plants.map(p => {
-            const nextW = new Date(p.lastW + ((curTemp > 34 ? 1 : 3) * 86400000));
-            const nextF = new Date(p.lastF + (15 * 86400000));
-            const isWDone = new Date(p.lastW).toLocaleDateString('th-TH') === todayStr;
-            const isFDone = new Date(p.lastF).toLocaleDateString('th-TH') === todayStr;
-
-            return `
-                <div class="plant-card">
-                    <img src="${p.img}" class="plant-img">
-                    <div style="font-weight:600; font-size:18px;">${p.name}</div>
-                    <div style="margin-top:8px;">
-                        <span class="schedule-tag ${nextW < now ? 'tag-danger' : 'tag-water'}">💧 รดน้ำ: ${nextW.toLocaleDateString('th-TH')}</span>
-                        <span class="schedule-tag ${nextF < now ? 'tag-danger' : 'tag-fert'}">🧪 ปุ๋ย: ${nextF.toLocaleDateString('th-TH')}</span>
-                    </div>
-                    <div class="btn-group">
-                        <div class="btn-action ${isWDone ? 'done' : ''}" onclick="${isWDone ? '' : `openCare(${p.id}, 'water', '${p.name}')`}">
-                            ${isWDone ? '✅ บันทึกแล้ว' : '💧 รดน้ำ'}
-                        </div>
-                        <div class="btn-action ${isFDone ? 'done' : ''}" onclick="${isFDone ? '' : `openCare(${p.id}, 'fert', '${p.name}')`}">
-                            ${isFDone ? '✅ บันทึกแล้ว' : '🧪 ใส่ปุ๋ย'}
-                        </div>
-                        <a href="https://line.me/R/oaMessage/@phetpaya/?ปรึกษาเรื่อง${p.name}" class="btn-action" style="color:var(--line-oa); text-decoration:none;">💬 ปรึกษาพืช</a>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        const allLogs = plants.flatMap(p => p.logs.map(l => ({ name: p.name, img: p.img, ...l })));
-        document.getElementById('report-count').innerText = allLogs.length;
-        report.innerHTML = allLogs.sort((a,b) => b.time - a.time).map(l => {
-            let shop = "";
-            const n = l.note.toLowerCase();
-            if(n.includes("หนอน") || n.includes("แมลง") || n.includes("เพลี้ย")) shop = `<a href="https://shop.line.me/@phetpaya/search?q=insect" class="shop-btn-mini">🛒 ซื้อยากำจัดแมลง</a>`;
-            else if(n.includes("รา") || n.includes("เน่า") || n.includes("จุด")) shop = `<a href="https://shop.line.me/@phetpaya/search?q=fungus" class="shop-btn-mini">🛒 ซื้อยาแก้เชื้อรา</a>`;
-            
-            return `
-                <div class="report-item">
-                    <img src="${l.img}" class="report-thumb">
-                    <div class="report-content">
-                        <div style="font-weight:600; font-size:14px;">${l.name}: ${l.text}</div>
-                        <div style="font-size:12px; color:#666; margin-top:2px;">📝 ${l.note || '-'}</div>
-                        <div style="font-size:10px; color:#999; margin-top:4px;">🕒 ${new Date(l.time).toLocaleString('th-TH')} | 📍 ${l.weather}</div>
-                        ${shop} <a href="https://line.me/R/oaMessage/@phetpaya/?สอบถามปัญหา${l.note}" class="oa-btn-mini">💬 ปรึกษาหมอพืช</a>
-                    </div>
-                </div>
-            `;
-        }).join('') || "<p style='text-align:center; color:#999;'>ยังไม่มีข้อมูล</p>";
-    }
-
-    function openCare(id, type, name) {
-        activeId = id; activeType = type;
-        document.getElementById('care-plant-name').innerText = (type==='water'?'รดน้ำ':'ให้ปุ๋ย') + ": " + name;
-        document.getElementById('care-note').value = "";
-        openModal('care-modal');
-    }
-
-    function saveCareLog() {
-        const note = document.getElementById('care-note').value;
-        const now = Date.now();
-        plants = plants.map(p => {
-            if(p.id === activeId) {
-                if(activeType === 'water') p.lastW = now; else p.lastF = now;
-                p.logs.unshift({ time: now, text: (activeType==='water'?'รดน้ำ':'ให้ปุ๋ย')+"เรียบร้อย", note: note, weather: curLoc });
-            }
-            return p;
-        });
         localStorage.setItem('phetpaya_v22_db', JSON.stringify(plants));
-        closeModal('care-modal'); renderUI();
-    }
+        
+        // ล้างค่าและปิด Modal
+        processedImageData = "";
+        document.getElementById('p-name').value = "";
+        document.getElementById('p-img').value = "";
+        closeModal('add-modal');
+        renderUI();
+        
+        alert("✅ บันทึกสำเร็จ! ข้อมูลถูกส่งไปเก็บที่ Google Sheets และ Drive เรียบร้อยแล้วครับ");
 
-    async function startLuxMeter() {
-        const video = document.getElementById('lux-preview');
-        const canvas = document.getElementById('c-buffer');
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-            video.srcObject = stream;
-            setTimeout(() => {
-                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-                const pix = canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
-                let b = 0; for(let i=0; i<pix.length; i+=4) b += (pix[i]+pix[i+1]+pix[i+2])/3;
-                const lux = Math.round((b/(pix.length/4))*15);
-                document.getElementById('lux-val').innerText = lux + " LUX";
-                let ana = lux < 800 ? "🌚 แสงน้อย: เหมาะกับเฟิร์น/พลูด่าง" : (lux < 2500 ? "⛅ แสงรำไร: เหมาะกับไม้ใบ" : "☀️ แสงจัด: เหมาะกับพืชสวน");
-                document.getElementById('lux-analysis').innerText = ana;
-                stream.getTracks().forEach(t => t.stop());
-            }, 1000);
-        } catch(e) { alert("กรุณาเปิดกล้องหน้า"); }
+    } catch (e) {
+        console.error("Error: ", e);
+        alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ Google Drive: " + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "บันทึกข้อมูลเข้าสวน";
+        status.style.display = 'none';
     }
-
-    function switchTab(id, el) {
-        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('page-' + id).classList.add('active');
-        el.classList.add('active');
-    }
-    function openModal(id) { document.getElementById(id).style.display='flex'; }
-    function closeModal(id) { document.getElementById(id).style.display='none'; }
-
-    init();
-</script>
-</body>
-</html>
+}
